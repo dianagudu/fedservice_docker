@@ -1,0 +1,212 @@
+version: '3.9'
+
+services:
+  lu:
+    image: fedservice
+    init: true
+    hostname: container-lu
+    networks:
+      - traefik
+      - fedservice
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik
+        - traefik.constraint-label=traefik-public
+        - traefik.http.routers.fedservice-lu-http.rule=Host("lu.fedservice.testbed.oidcfed.incubator.geant.org")
+        - traefik.http.routers.fedservice-lu-http.entrypoints=http
+        - traefik.http.routers.fedservice-lu-http.middlewares=https-redirect
+        - traefik.http.routers.fedservice-lu-https.rule=Host("lu.fedservice.testbed.oidcfed.incubator.geant.org")
+        - traefik.http.routers.fedservice-lu-https.entrypoints=https
+        - traefik.http.routers.fedservice-lu-https.tls=true
+        - traefik.http.routers.fedservice-lu-https.tls.certresolver=le
+        - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
+        - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
+        - traefik.http.services.fedservice-lu.loadbalancer.server.port=11833
+    environment:
+      - ENTITY_TYPE=intermediate
+      - ENTITY_NAME=LU
+    ports:
+      - 6001:11833
+    volumes:
+      - ./conf/intermediate/lu:/conf:ro
+  umu:
+    image: fedservice
+    init: true
+    hostname: container-umu
+    networks:
+      - traefik
+      - fedservice
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik
+        - traefik.constraint-label=traefik-public
+        - traefik.http.routers.fedservice-umu-http.rule=Host("umu.fedservice.testbed.oidcfed.incubator.geant.org")
+        - traefik.http.routers.fedservice-umu-http.entrypoints=http
+        - traefik.http.routers.fedservice-umu-http.middlewares=https-redirect
+        - traefik.http.routers.fedservice-umu-https.rule=Host("umu.fedservice.testbed.oidcfed.incubator.geant.org")
+        - traefik.http.routers.fedservice-umu-https.entrypoints=https
+        - traefik.http.routers.fedservice-umu-https.tls=true
+        - traefik.http.routers.fedservice-umu-https.tls.certresolver=le
+        - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
+        - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
+        - traefik.http.services.fedservice-umu.loadbalancer.server.port=11833
+    environment:
+      - ENTITY_TYPE=intermediate
+      - ENTITY_NAME=UMU
+    ports:
+      - 6002:11833
+    volumes:
+      - ./conf/intermediate/umu:/conf:ro
+  swamid:
+    image: fedservice
+    init: true
+    hostname: container-swamid
+    networks:
+      - traefik
+      - fedservice
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik
+        - traefik.constraint-label=traefik-public
+        - traefik.http.routers.fedservice-swamid-http.rule=Host("swamid.fedservice.testbed.oidcfed.incubator.geant.org")
+        - traefik.http.routers.fedservice-swamid-http.entrypoints=http
+        - traefik.http.routers.fedservice-swamid-http.middlewares=https-redirect
+        - traefik.http.routers.fedservice-swamid-https.rule=Host("swamid.fedservice.testbed.oidcfed.incubator.geant.org")
+        - traefik.http.routers.fedservice-swamid-https.entrypoints=https
+        - traefik.http.routers.fedservice-swamid-https.tls=true
+        - traefik.http.routers.fedservice-swamid-https.tls.certresolver=le
+        - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
+        - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
+        - traefik.http.services.fedservice-swamid.loadbalancer.server.port=11833
+    environment:
+      - ENTITY_TYPE=ta
+      - ENTITY_NAME=SWAMID
+    ports:
+      - 7002:11833
+    volumes:
+      - ./conf/ta/swamid:/conf:ro
+  seid:
+    image: fedservice
+    init: true
+    hostname: container-seid
+    networks:
+      - traefik
+      - fedservice
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik
+        - traefik.constraint-label=traefik-public
+        - traefik.http.routers.fedservice-seid-http.rule=Host("seid.fedservice.testbed.oidcfed.incubator.geant.org")
+        - traefik.http.routers.fedservice-seid-http.entrypoints=http
+        - traefik.http.routers.fedservice-seid-http.middlewares=https-redirect
+        - traefik.http.routers.fedservice-seid-https.rule=Host("seid.fedservice.testbed.oidcfed.incubator.geant.org")
+        - traefik.http.routers.fedservice-seid-https.entrypoints=https
+        - traefik.http.routers.fedservice-seid-https.tls=true
+        - traefik.http.routers.fedservice-seid-https.tls.certresolver=le
+        - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
+        - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
+        - traefik.http.services.fedservice-seid.loadbalancer.server.port=11833
+    environment:
+      - ENTITY_TYPE=ta
+      - ENTITY_NAME=SEID
+    ports:
+      - 7001:11833
+    volumes:
+      - ./conf/ta/seid:/conf:ro
+  auto:
+    image: fedservice
+    init: true
+    hostname: container-auto
+    networks:
+      - traefik
+      - fedservice
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik
+        - traefik.constraint-label=traefik-public
+        - traefik.http.routers.fedservice-auto-http.rule=Host("auto.fedservice.testbed.oidcfed.incubator.geant.org")
+        - traefik.http.routers.fedservice-auto-http.entrypoints=http
+        - traefik.http.routers.fedservice-auto-http.middlewares=https-redirect
+        - traefik.http.routers.fedservice-auto-https.rule=Host("auto.fedservice.testbed.oidcfed.incubator.geant.org")
+        - traefik.http.routers.fedservice-auto-https.entrypoints=https
+        - traefik.http.routers.fedservice-auto-https.tls=true
+        - traefik.http.routers.fedservice-auto-https.tls.certresolver=le
+        - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
+        - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
+        - traefik.http.services.fedservice-auto.loadbalancer.server.port=11833
+    environment:
+      - ENTITY_TYPE=rp
+      - ENTITY_NAME=AUTO
+    ports:
+      - 4002:11833
+    volumes:
+      - ./conf/rp/auto:/conf:ro
+  expl:
+    image: fedservice
+    init: true
+    hostname: container-expl
+    networks:
+      - traefik
+      - fedservice
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik
+        - traefik.constraint-label=traefik-public
+        - traefik.http.routers.fedservice-expl-http.rule=Host("expl.fedservice.testbed.oidcfed.incubator.geant.org")
+        - traefik.http.routers.fedservice-expl-http.entrypoints=http
+        - traefik.http.routers.fedservice-expl-http.middlewares=https-redirect
+        - traefik.http.routers.fedservice-expl-https.rule=Host("expl.fedservice.testbed.oidcfed.incubator.geant.org")
+        - traefik.http.routers.fedservice-expl-https.entrypoints=https
+        - traefik.http.routers.fedservice-expl-https.tls=true
+        - traefik.http.routers.fedservice-expl-https.tls.certresolver=le
+        - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
+        - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
+        - traefik.http.services.fedservice-expl.loadbalancer.server.port=11833
+    environment:
+      - ENTITY_TYPE=rp
+      - ENTITY_NAME=EXPL
+    ports:
+      - 4001:11833
+    volumes:
+      - ./conf/rp/expl:/conf:ro
+  op:
+    image: fedservice
+    init: true
+    hostname: container-op
+    networks:
+      - traefik
+      - fedservice
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik
+        - traefik.constraint-label=traefik-public
+        - traefik.http.routers.fedservice-op-http.rule=Host("op.fedservice.testbed.oidcfed.incubator.geant.org")
+        - traefik.http.routers.fedservice-op-http.entrypoints=http
+        - traefik.http.routers.fedservice-op-http.middlewares=https-redirect
+        - traefik.http.routers.fedservice-op-https.rule=Host("op.fedservice.testbed.oidcfed.incubator.geant.org")
+        - traefik.http.routers.fedservice-op-https.entrypoints=https
+        - traefik.http.routers.fedservice-op-https.tls=true
+        - traefik.http.routers.fedservice-op-https.tls.certresolver=le
+        - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
+        - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
+        - traefik.http.services.fedservice-op.loadbalancer.server.port=11833
+    environment:
+      - ENTITY_TYPE=op
+      - ENTITY_NAME=OP
+    ports:
+      - 5000:11833
+    volumes:
+      - ./conf/op/op:/conf:ro
+
+networks:
+  traefik:
+    external: true
+  fedservice:
+    external: false

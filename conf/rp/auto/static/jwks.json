@@ -1,0 +1,19 @@
+{
+    "keys": [
+        {
+            "kty": "RSA",
+            "use": "sig",
+            "kid": "WU9obFVaNV9aSzYyb2NlVzEzOHpoWHQ4ajFIdHo1TTRucUlmRlFsZ0xqMA",
+            "n": "x3T2w2I9H4PC7_MydCApDDfrNch8Fcfnh-Din0csGR1eZLU5aG490LiWmm7oq_D01lZBv0NbiGwsfn7DGcetRxG_8JvampPyQCu_vkOdTiMWXHm2xGIBikiFO3hlPAB9L2CmQ7g325CZYMtokJ9cfVMcPS-NUV7L2d6VwK240r8-BLJzqbWq9gXEf9xh1iDrMZfTWT96AXnk6pe7n25tFa9wcSpewf8htGUm74YQHpCCmZfMl1t19MLBm0Bu2GsdfCV2qUqW1xAvQb8jvkTvgu6beRee7Q-kqMwGxkQflp9sPZxI_kiG9XUlaovuiRlb_g3HLWaSz4bcmPHW80Uv7Q",
+            "e": "AQAB"
+        },
+        {
+            "kty": "EC",
+            "use": "sig",
+            "kid": "TXFOQ0l0NjN5Zk03d1BIUUVIVG1BdkVxVmZMQzMyaW54Qkpzekg1VVBBQQ",
+            "crv": "P-256",
+            "x": "U-tLArwj5gVwHsxa_hlgFJKgxlAkZ15HHTvWajhEM4g",
+            "y": "xmATBnH7y-zk9sTmdQwZK_Elp57rk4Du55nA6zMQZGg"
+        }
+    ]
+}

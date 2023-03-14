@@ -1,0 +1,19 @@
+{
+    "keys": [
+        {
+            "kty": "RSA",
+            "use": "sig",
+            "kid": "c1A0bVhBd1hsWjN4aDA3MzVLUzE5UXBRSlVQZDJ4NjAyVVNPUHVrc1E1Yw",
+            "e": "AQAB",
+            "n": "iIgDyJLaqSVCva7jCVAWCZ3Mcno2URp0iu7qY68MxjhRrXiwR9HgBuYcPcLkSIvdlK2PtBrhU8xRdP7qsSzVtjJS9mrE4jrCYQqXCLbNN8wiV1CPSIjQk94SJYAHs1gcmBdWGoKwCFSo_r9f4DZs7kN96b2v6u9pcqPfrCLSJ8-FX7msDpHUc2VGAwpm15D3FhiBX_HZJftES0Go1fa2Dv2wFddg7447mtrJ-XRCiKTIrAdJgSi7hEx_IF7apqOCNqebzmC40zavKh7wmlOdiQmVCMtvhg63fcbfeXKvyCbhYGIPBKuRNDXR2J1ShPIdJFnEoGYDObiRUVTXkf_aTw"
+        },
+        {
+            "kty": "EC",
+            "use": "sig",
+            "kid": "OFJycHl3emZ0S0FEZDg3ZTB6bkt6RTZxUmJpTkFteU9oQ1o5S0EzYnM3Zw",
+            "crv": "P-256",
+            "x": "phEEHZWDKEFTsztEVw3sUCBZ_wGyiAI-krE4-JUY0Uw",
+            "y": "E1t_udBe_zhF8c38b3A3NKBuQDzZC3RPcVyEpe9ZorE"
+        }
+    ]
+}

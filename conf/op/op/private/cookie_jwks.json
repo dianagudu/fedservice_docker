@@ -1,0 +1,16 @@
+{
+    "keys": [
+        {
+            "kty": "oct",
+            "use": "enc",
+            "kid": "enc",
+            "k": "RyhyUc1L7YyAI_lJ8jdr_4JwRiSZZ0e9"
+        },
+        {
+            "kty": "oct",
+            "use": "sig",
+            "kid": "sig",
+            "k": "fUHkrwuuGvaJWh1AHFh57DvK8ijqJTdE"
+        }
+    ]
+}
