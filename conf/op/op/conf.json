@@ -1,8 +1,8 @@
 {
   "port": 5000,
   "domain": "container-op",
-  "server_name": "{domain}:{port}",
-  "base_url": "http://{domain}:{port}",
+  "server_name": "op.fedservice.testbed.oidcfed.incubator.geant.org",
+  "base_url": "https://op.fedservice.testbed.oidcfed.incubator.geant.org",
   "key_def": [
     {
       "type": "RSA",
@@ -41,7 +41,7 @@
   },
   "op": {
     "server_info": {
-      "issuer": "http://{domain}:{port}",
+      "issuer": "https://op.fedservice.testbed.oidcfed.incubator.geant.org",
       "httpc_params": {
         "verify": false
       },
@@ -292,7 +292,7 @@
         "kwargs": {
           "default_values": {
             "name": "oidc_op",
-            "domain": "127.0.0.1",
+            "domain": "op.fedservice.testbed.oidcfed.incubator.geant.org",
             "path": "/",
             "max_age": 3600
           }
@@ -309,7 +309,7 @@
         }
       },
       "federation": {
-        "entity_id": "http://{domain}:{port}",
+        "entity_id": "https://op.fedservice.testbed.oidcfed.incubator.geant.org",
         "keys": {
           "private_path": "private/fed_keys.json",
           "key_defs": [

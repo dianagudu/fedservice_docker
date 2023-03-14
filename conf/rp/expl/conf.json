@@ -1,7 +1,7 @@
 {
   "domain": "container-expl",
   "port": 4002,
-  "base_url": "http://{domain}:{port}",
+  "base_url": "https://expl.fedservice.testbed.oidcfed.incubator.geant.org",
   "httpc_params": {
     "verify": false
   },
@@ -78,7 +78,7 @@
     }
   },
   "federation": {
-    "entity_id": "http://{domain}:{port}/{{}}",
+    "entity_id": "https://expl.fedservice.testbed.oidcfed.incubator.geant.org/{{}}",
     "keys": {
       "private_path": "private/fed_keys.json",
       "key_defs": [
@@ -196,7 +196,7 @@
         ]
       },
       "redirect_uris": [
-        "http://{domain}:{port}/authz_cb/local"
+        "https://expl.fedservice.testbed.oidcfed.incubator.geant.org/authz_cb/local"
       ],
       "services": {
         "discovery": {
