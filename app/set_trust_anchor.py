@@ -35,12 +35,10 @@ def main():
     anchors_conf_dir = [get_valid_conf(ta) for ta in sys.argv[2:]]
 
     target_conf = get_federation_config(target_conf_dir, entity_type(target_conf_dir))
-    print(target_conf, entity_type(target_conf_dir))
 
     _anchor = {}
     for acd in anchors_conf_dir:
         anchor_conf = get_federation_config(acd, entity_type(acd))
-        print(anchor_conf)
         _keyjar = create_and_write_private_and_public_key_sets(acd, anchor_conf)
         _entity_id = anchor_conf["entity_id"]
         _anchor[_entity_id] = _keyjar.export_jwks()

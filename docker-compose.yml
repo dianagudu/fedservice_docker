@@ -1,6 +1,20 @@
 version: '3.9'
 
 services:
+  setup:
+    image: fedservice
+    restart: "no"
+    command: "/app/setup.sh"
+    user: ${UID}:${GID}
+    volumes:
+      - ./conf:/conf
+  display:
+    image: fedservice
+    restart: "no"
+    entrypoint:
+      - "python3"
+      - "/app/display_entity.py"
+    command: ""
   lu:
     image: fedservice
     init: true

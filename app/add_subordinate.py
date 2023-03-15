@@ -67,12 +67,9 @@ def main():
     if _policy:
         entity_statement.update(_policy)
 
-    _fname = (
-        pathlib.Path(superior_conf_dir)
-        / "subordinates"
-        / quote_plus(subordinate_conf["entity_id"])
-    )
-    with open(_fname, "w") as fp:
+    p = pathlib.Path(superior_conf_dir) / "subordinates"
+    p.mkdir(exist_ok=True)
+    with open(p / quote_plus(subordinate_conf["entity_id"]), "w") as fp:
         fp.write(json.dumps(entity_statement, sort_keys=True, indent=2))
 
 
