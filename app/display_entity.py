@@ -11,30 +11,33 @@ from fedservice.message import EntityStatement
 
 def get_self_signed_entity_statement(entity_id):
     _url = entity_id + "/.well-known/openid-federation"
-    _response = requests.request("GET", _url, verify=False)
+    _response = requests.request("GET", _url, verify=True)
+    # print("response: ", _response.text)
     _jws = factory(_response.text)
+    # print("JWS: ", _jws)
     _payload = _jws.jwt.payload()
     entity_statement = EntityStatement(**_payload)
     _key_jar = KeyJar()
     # verify  entity_statement["iss"]
-    _key_jar.import_jwks(entity_statement['jwks'], entity_id)
+    _key_jar.import_jwks(entity_statement["jwks"], entity_id)
     _keys = _key_jar.get_jwt_verify_keys(_jws.jwt)
     _res = _jws.verify_compact(keys=_keys)
     return _res
 
 
 def list_entities(list_endpoint):
-    _response = requests.request("GET", list_endpoint, verify=False)
+    _response = requests.request("GET", list_endpoint, verify=True)
     _list = json.loads(_response.text)
     return _list
 
 
 def fetch_entity(fetch_endpoint, iss, sub, iss_entity_statement):
-    _response = requests.request("GET", fetch_endpoint, verify=False,
-                                 params={'iss': iss, 'sub': sub})
+    _response = requests.request(
+        "GET", fetch_endpoint, verify=True, params={"iss": iss, "sub": sub}
+    )
     _jws = factory(_response.text)
     _key_jar = KeyJar()
-    _key_jar.import_jwks(iss_entity_statement['jwks'], iss)
+    _key_jar.import_jwks(iss_entity_statement["jwks"], iss)
     _keys = _key_jar.get_jwt_verify_keys(_jws.jwt)
     _res = _jws.verify_compact(keys=_keys)
     return _res
@@ -65,5 +68,7 @@ if __name__ == "__main__":
     if "list" in endpoint and "fetch" in endpoint:
         _list = list_entities(endpoint["list"])
         for _entity in _list:
-            _statement = fetch_entity(endpoint["fetch"], entity_id, _entity, _entity_statement)
+            _statement = fetch_entity(
+                endpoint["fetch"], entity_id, _entity, _entity_statement
+            )
             print_entity_statement(_entity, _statement)
