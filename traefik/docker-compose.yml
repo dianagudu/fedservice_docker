@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  reverse-proxy:
+    image: traefik
+    container_name: container-traefik
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./conf/static.yml:/etc/traefik/traefik.yml:ro
+      - ./conf/dynamic.yml:/etc/traefik/dynamic.yml:ro
+      - ./certs:/etc/certs:ro
+    networks:
+      traefik:
+        aliases:
+          - swamid.fedservice.lh
+          - seid.fedservice.lh
+          - lu.fedservice.lh
+          - umu.fedservice.lh
+          - op.fedservice.lh
+          - auto.fedservice.lh
+          - expl.fedservice.lh
+    labels:
+      - traefik.enable=true
+
+networks:
+  traefik:
+    external: true

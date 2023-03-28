@@ -7,3 +7,4 @@ conf/*/*/static/
 conf/*/*/private/
 conf/*/*/subordinates/
 conf/*/*/trusted_roots.json
+traefik/certs/*

@@ -11,7 +11,7 @@ from fedservice.message import EntityStatement
 
 def get_self_signed_entity_statement(entity_id):
     _url = entity_id + "/.well-known/openid-federation"
-    _response = requests.request("GET", _url, verify=True)
+    _response = requests.request("GET", _url, verify=False)
     # print("response: ", _response.text)
     _jws = factory(_response.text)
     # print("JWS: ", _jws)
@@ -26,14 +26,14 @@ def get_self_signed_entity_statement(entity_id):
 
 
 def list_entities(list_endpoint):
-    _response = requests.request("GET", list_endpoint, verify=True)
+    _response = requests.request("GET", list_endpoint, verify=False)
     _list = json.loads(_response.text)
     return _list
 
 
 def fetch_entity(fetch_endpoint, iss, sub, iss_entity_statement):
     _response = requests.request(
-        "GET", fetch_endpoint, verify=True, params={"iss": iss, "sub": sub}
+        "GET", fetch_endpoint, verify=False, params={"iss": iss, "sub": sub}
     )
     _jws = factory(_response.text)
     _key_jar = KeyJar()

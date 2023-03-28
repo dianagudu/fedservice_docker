@@ -2,7 +2,7 @@
 
 [[ -f "/conf/.env" ]] && source "/conf/.env"
 
-[[ -z "${ENTITY_TYPE}" || ! -d "./${ENTITY_TYPE-}" ]] || (
+[[ -z "${ENTITY_TYPE}" || ! -d "/app/${ENTITY_TYPE-}" ]] && (
     echo "ERROR: Entity type '$ENTITY_TYPE' not found"
     exit 1
 )
