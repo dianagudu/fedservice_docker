@@ -1,6 +1,6 @@
 {
-  "domain": "container-expl",
-  "port": 4002,
+  "domain": "expl.fedservice.lh",
+  "port": 443,
   "base_url": "https://expl.fedservice.lh",
   "httpc_params": {
     "verify": false

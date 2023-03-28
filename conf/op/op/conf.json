@@ -1,6 +1,6 @@
 {
-  "port": 5000,
-  "domain": "container-op",
+  "port": 443,
+  "domain": "op.fedservice.lh",
   "server_name": "op.fedservice.lh",
   "base_url": "https://op.fedservice.lh",
   "key_def": [

@@ -1,6 +1,6 @@
 {
-  "domain": "container-auto",
-  "port": 4001,
+  "domain": "auto.fedservice.lh",
+  "port": 443,
   "base_url": "https://auto.fedservice.lh",
   "httpc_params": {
     "verify": false
