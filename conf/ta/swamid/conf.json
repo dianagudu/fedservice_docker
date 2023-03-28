@@ -1,6 +1,6 @@
 {
   "federation": {
-    "entity_id": "https://swamid.fedservice.testbed.oidcfed.incubator.geant.org",
+    "entity_id": "https://swamid.fedservice.localhost",
     "keys": {
       "private_path": "fed_keys.json",
       "key_defs": [

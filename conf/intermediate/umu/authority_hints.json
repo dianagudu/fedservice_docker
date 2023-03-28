@@ -1,4 +1,4 @@
 [
-  "https://seid.fedservice.testbed.oidcfed.incubator.geant.org",
-  "https://swamid.fedservice.testbed.oidcfed.incubator.geant.org"
+  "https://seid.fedservice.localhost",
+  "https://swamid.fedservice.localhost"
 ]
