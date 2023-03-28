@@ -1,7 +1,7 @@
 {
   "domain": "container-expl",
   "port": 4002,
-  "base_url": "https://expl.fedservice.localhost",
+  "base_url": "https://expl.fedservice.lh",
   "httpc_params": {
     "verify": false
   },
@@ -78,7 +78,7 @@
     }
   },
   "federation": {
-    "entity_id": "https://expl.fedservice.localhost/{{}}",
+    "entity_id": "https://expl.fedservice.lh/{{}}",
     "keys": {
       "private_path": "private/fed_keys.json",
       "key_defs": [
@@ -174,7 +174,7 @@
       }
     },
     "local": {
-      "issuer": "https://op.fedservice.localhost",
+      "issuer": "https://op.fedservice.lh",
       "client_preferences": {
         "application_name": "rphandler",
         "application_type": "web",
@@ -196,7 +196,7 @@
         ]
       },
       "redirect_uris": [
-        "https://expl.fedservice.localhost/authz_cb/local"
+        "https://expl.fedservice.lh/authz_cb/local"
       ],
       "services": {
         "discovery": {

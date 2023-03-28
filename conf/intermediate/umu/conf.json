@@ -1,6 +1,6 @@
 {
   "federation": {
-    "entity_id": "https://umu.fedservice.localhost",
+    "entity_id": "https://umu.fedservice.lh",
     "keys": {
       "private_path": "fed_keys.json",
       "key_defs": [
@@ -24,8 +24,8 @@
     "authority_hints": "authority_hints.json",
     "trusted_roots": "trusted_roots.json",
     "priority": [
-      "https://seid.fedservice.localhost",
-      "https://swamid.fedservice.localhost"
+      "https://seid.fedservice.lh",
+      "https://swamid.fedservice.lh"
     ],
     "entity_type": "federation_entity",
     "opponent_entity_type": "federation_entity",

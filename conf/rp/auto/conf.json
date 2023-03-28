@@ -1,7 +1,7 @@
 {
   "domain": "container-auto",
   "port": 4001,
-  "base_url": "https://auto.fedservice.localhost",
+  "base_url": "https://auto.fedservice.lh",
   "httpc_params": {
     "verify": false
   },
@@ -78,7 +78,7 @@
     }
   },
   "federation": {
-    "entity_id": "https://auto.fedservice.localhost",
+    "entity_id": "https://auto.fedservice.lh",
     "keys": {
       "private_path": "private/fed_keys.json",
       "key_defs": [
@@ -103,8 +103,8 @@
     "authority_hints": "authority_hints.json",
     "trusted_roots": "trusted_roots.json",
     "priority": [
-      "https://seid.fedservice.localhost",
-      "https://swamid.fedservice.localhost"
+      "https://seid.fedservice.lh",
+      "https://swamid.fedservice.lh"
     ],
     "entity_type": "openid_relying_party",
     "opponent_entity_type": "openid_provider",
@@ -142,7 +142,7 @@
         ]
       },
       "redirect_uris": [
-        "https://auto.fedservice.localhost/authz_cb"
+        "https://auto.fedservice.lh/authz_cb"
       ],
       "services": {
         "discovery": {
@@ -176,7 +176,7 @@
       }
     },
     "local": {
-      "issuer": "https://op.fedservice.localhost",
+      "issuer": "https://op.fedservice.lh",
       "client_preferences": {
         "application_name": "rphandler",
         "application_type": "web",
@@ -198,7 +198,7 @@
         ]
       },
       "redirect_uris": [
-        "https://auto.fedservice.localhost/authz_cb"
+        "https://auto.fedservice.lh/authz_cb"
       ],
       "services": {
         "discovery": {

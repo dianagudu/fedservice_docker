@@ -1,6 +1,6 @@
 {
   "federation": {
-    "entity_id": "https://seid.fedservice.localhost",
+    "entity_id": "https://seid.fedservice.lh",
     "keys": {
       "private_path": "fed_keys.json",
       "key_defs": [

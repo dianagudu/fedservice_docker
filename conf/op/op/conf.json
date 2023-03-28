@@ -1,8 +1,8 @@
 {
   "port": 5000,
   "domain": "container-op",
-  "server_name": "op.fedservice.localhost",
-  "base_url": "https://op.fedservice.localhost",
+  "server_name": "op.fedservice.lh",
+  "base_url": "https://op.fedservice.lh",
   "key_def": [
     {
       "type": "RSA",
@@ -41,7 +41,7 @@
   },
   "op": {
     "server_info": {
-      "issuer": "https://op.fedservice.localhost",
+      "issuer": "https://op.fedservice.lh",
       "httpc_params": {
         "verify": false
       },
@@ -292,7 +292,7 @@
         "kwargs": {
           "default_values": {
             "name": "oidc_op",
-            "domain": "op.fedservice.localhost",
+            "domain": "op.fedservice.lh",
             "path": "/",
             "max_age": 3600
           }
@@ -309,7 +309,7 @@
         }
       },
       "federation": {
-        "entity_id": "https://op.fedservice.localhost",
+        "entity_id": "https://op.fedservice.lh",
         "keys": {
           "private_path": "private/fed_keys.json",
           "key_defs": [
@@ -333,8 +333,8 @@
         "authority_hints": "authority_hints.json",
         "trusted_roots": "trusted_roots.json",
         "priority": [
-          "https://seid.fedservice.localhost",
-          "https://swamid.fedservice.localhost"
+          "https://seid.fedservice.lh",
+          "https://swamid.fedservice.lh"
         ],
         "entity_type": "openid_provider",
         "opponent_entity_type": "openid_relying_party",
