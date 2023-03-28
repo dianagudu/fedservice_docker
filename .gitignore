@@ -2,3 +2,8 @@
 *.egg-info
 build/
 .env
+conf/*/*/fed_keys.json
+conf/*/*/static/
+conf/*/*/private/
+conf/*/*/subordinates/
+conf/*/*/trusted_roots.json
