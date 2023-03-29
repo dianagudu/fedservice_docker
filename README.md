@@ -116,7 +116,7 @@ We have a testbed federation setup at `fedservice.testbed.oidcfed.incubator.gean
   - [seid](https://seid.fedservice.testbed.oidcfed.incubator.geant.org)
   - [swamid](https://swamid.fedservice.testbed.oidcfed.incubator.geant.org)
 
-The setup uses Let's Encrypt certificates. The compose file is [here](docker-compose.tii.yml).
+The setup uses Let's Encrypt certificates and Docker swarm. The compose file is [here](docker-compose.tii.yml).
 
 You can also display the payload of an entity that has the provided entity id (given by its URL) as follows:
 
