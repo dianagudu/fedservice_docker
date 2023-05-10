@@ -68,6 +68,12 @@ mkcert -install
 mkcert -cert-file traefik/certs/local-cert.pem -key-file traefik/certs/local-key.pem "fedservice.lh" "*.fedservice.lh"
 ```
 
+- get mkcert's root CA certificate to add it to all the containers' trust stores:
+
+```bash
+cp "$(mkcert -CAROOT)/rootCA.pem" mkcertRootCA.pem
+```
+
 - create a docker network for traefik
 
 ```bash

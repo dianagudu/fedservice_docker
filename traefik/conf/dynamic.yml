@@ -1,15 +1,20 @@
 http:
   routers:
     traefik:
-      rule: "Host(`traefik.fedservice.lh`)"
+      rule: "Host(`traefik.fedservice.lh`, `traefik.spid-cie.fedservice.lh`)"
       service: "api@internal"
       tls:
         domains:
           - main: "fedservice.lh"
             sans:
               - "*.fedservice.lh"
+          - main: "spid-cie.fedservice.lh"
+            sans:
+              - "*.spid-cie.fedservice.lh"
 
 tls:
   certificates:
-    - certFile: "/etc/certs/local-cert.pem"
-      keyFile: "/etc/certs/local-key.pem"
+    - certFile: "/etc/certs/cert-fedservice.lh.pem"
+      keyFile: "/etc/certs/key-fedservice.lh.pem"
+    - certFile: "/etc/certs/cert-spid-cie.fedservice.lh.pem"
+      keyFile: "/etc/certs/key-spid-cie.fedservice.lh.pem"

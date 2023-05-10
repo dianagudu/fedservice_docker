@@ -100,7 +100,7 @@
           ],
           "add_claim_by_scope": true,
           "aud": [
-            "http://example.org/appl"
+            "https://op.fedservice.lh/token"
           ]
         },
         "refresh": {

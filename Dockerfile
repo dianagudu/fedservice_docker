@@ -12,6 +12,7 @@ WORKDIR /lib/fedservice
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --upgrade pip && \
+    pip install deps/oidcop-2.4.3.tar.gz && \
     pip install -r requirements.txt && \
     pip install flask && \
     pip install .

@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class Fetch(Endpoint):
     request_cls = oidc.Message
     response_cls = EntityStatement
-    response_format = 'jws'
+    response_format = "jws"
     name = "fetch"
 
     def __init__(self, server_get, **kwargs):
@@ -24,7 +24,9 @@ class Fetch(Endpoint):
         _context = self.server_get("context")
         _issuer = request.get("iss")
         if not _issuer:
-            raise FedServiceError("Issuer mandatory")
+            # raise FedServiceError("Issuer mandatory")
+            # if not set, the issuer matches to the Entity at which the request was made
+            _issuer = _context.entity_id
         if _issuer != _context.entity_id:
             raise FedServiceError("Wrong issuer")
 
@@ -38,7 +40,7 @@ class Fetch(Endpoint):
             _response = _context.subordinates[_sub]
             _response["authority_hints"] = [_issuer]
 
-        return {'response_args': _response}
+        return {"response_args": _response}
 
     def create_entity_statement(self, request_args, request=None, **kwargs):
         """
@@ -56,4 +58,6 @@ class Fetch(Endpoint):
         if not _sub:
             _sub = _context.entity_id
 
-        return _context.create_entity_statement(iss=_context.entity_id, sub=_sub, **_payload)
+        return _context.create_entity_statement(
+            iss=_context.entity_id, sub=_sub, **_payload
+        )

@@ -27,12 +27,14 @@ class FailedConfigurationRetrieval(Exception):
 
 def construct_well_known_url(entity_id, typ):
     p = urlparse(entity_id)
-    return '{}://{}/.well-known/{}'.format(p.scheme, p.netloc, typ)
+    return "{}://{}{}/.well-known/{}".format(
+        p.scheme, p.netloc, p.path.rstrip("/"), typ
+    )
 
 
 def construct_tenant_well_known_url(entity_id, typ):
     p = urlparse(entity_id)
-    return '{}://{}{}/.well-known/{}'.format(p.scheme, p.netloc, p.path, typ)
+    return "{}://{}{}/.well-known/{}".format(p.scheme, p.netloc, p.path, typ)
 
 
 def unverified_entity_statement(signed_jwt):
@@ -51,7 +53,7 @@ def verify_self_signed_signature(config):
 
     payload = unverified_entity_statement(config)
     keyjar = KeyJar()
-    keyjar.import_jwks(payload['jwks'], payload['iss'])
+    keyjar.import_jwks(payload["jwks"], payload["iss"])
 
     _jwt = JWT(key_jar=keyjar)
     _val = _jwt.unpack(config)
@@ -59,16 +61,12 @@ def verify_self_signed_signature(config):
 
 
 def get_endpoint(endpoint_type, config):
-    _fe = config['metadata']['federation_entity']
+    _fe = config["metadata"]["federation_entity"]
     return _fe.get(f"federation_{endpoint_type}_endpoint")
 
 
 def construct_entity_statement_query(api_endpoint, issuer, subject):
-    return "{}?{}".format(api_endpoint,
-                          urlencode({
-                              "iss": issuer,
-                              "sub": subject
-                          }))
+    return "{}?{}".format(api_endpoint, urlencode({"iss": issuer, "sub": subject}))
 
 
 def active(config):
@@ -92,11 +90,18 @@ class Collector(ImpExp):
         "use_ssc": bool,
         "ssc_dir": "",
         "cwd": "",
-        "httpc_params": {}
+        "httpc_params": {},
     }
 
-    def __init__(self, trust_anchors=None, http_cli=None, insecure=False,
-                 allowed_delta=300, httpc_params=None, cwd=''):
+    def __init__(
+        self,
+        trust_anchors=None,
+        http_cli=None,
+        insecure=False,
+        allowed_delta=300,
+        httpc_params=None,
+        cwd="",
+    ):
         """
 
         :param trust_anchors:
@@ -127,7 +132,7 @@ class Collector(ImpExp):
         self.httpc_params = httpc_params or {}
         if insecure:
             self.httpc_params["verify"] = False
-        logger.debug(f'httpc_params: {httpc_params}')
+        logger.debug(f"httpc_params: {httpc_params}")
 
     def get_entity_statement(self, fetch_endpoint, issuer, subject):
         """
@@ -143,7 +148,9 @@ class Collector(ImpExp):
         if self.use_ssc:
             signed_entity_statement = self.do_ssc_seq(_url, issuer)
         else:
-            signed_entity_statement = self.get_signed_entity_statement(_url, self.httpc_params)
+            signed_entity_statement = self.get_signed_entity_statement(
+                _url, self.httpc_params
+            )
 
         return signed_entity_statement
 
@@ -192,8 +199,10 @@ class Collector(ImpExp):
 
         response = self.http_cli("GET", url, **httpc_args)
         if response.status_code == 200:
-            if 'application/jose' not in response.headers['Content-Type']:
-                logger.warning(f"Wrong Content-Type: {response.headers['Content-Type']}")
+            if "application/jose" not in response.headers["Content-Type"]:
+                logger.warning(
+                    f"Wrong Content-Type: {response.headers['Content-Type']}"
+                )
             return response.text
         elif response.status_code == 404:
             raise MissingPage(f"No such page: '{url}'")
@@ -218,22 +227,24 @@ class Collector(ImpExp):
         # have I seen it before
         cert_path = self.get_cert_path(entity_id)
 
-        _signed_entity_statement = ''
+        _signed_entity_statement = ""
         if cert_path is None:
             logger.debug("No saved certificate")
             if self_signed:  # This only works for the self-signed entity statements
                 # First get the Entity Statement without verifying the entity certificate
                 httpc_args["verify"] = False
 
-                _signed_entity_statement = self.get_signed_entity_statement(url, httpc_args)
+                _signed_entity_statement = self.get_signed_entity_statement(
+                    url, httpc_args
+                )
 
                 # The get the Entity Statement while using the certificate from the entity statement
                 # to verify the HTTPS certificate
                 cert_path = self.store_ssc_cert(
-                    unverified_entity_statement(_signed_entity_statement),
-                    entity_id)
+                    unverified_entity_statement(_signed_entity_statement), entity_id
+                )
                 if not cert_path:
-                    logger.debug('No SSL certificate in the entity metadata')
+                    logger.debug("No SSL certificate in the entity metadata")
             else:  # out of luck
                 raise UnknownCertificate(entity_id)
 
@@ -259,17 +270,22 @@ class Collector(ImpExp):
                 logger.debug("Use SelfSignedCert support")
                 self_signed_config = self.do_ssc_seq(_url, entity_id)
             else:
-                self_signed_config = self.get_signed_entity_statement(_url, self.httpc_params)
+                self_signed_config = self.get_signed_entity_statement(
+                    _url, self.httpc_params
+                )
         except MissingPage:  # if tenant involved
-            _tenant_url = construct_tenant_well_known_url(entity_id, "openid-federation")
+            _tenant_url = construct_tenant_well_known_url(
+                entity_id, "openid-federation"
+            )
             logger.debug(f"Get configuration from (tenant): '{_tenant_url}'")
             if _tenant_url != _url:
                 if self.use_ssc:
                     self_signed_config = self.do_ssc_seq(_tenant_url, entity_id)
                 else:
-                    self_signed_config = self.get_signed_entity_statement(_tenant_url,
-                                                                          self.httpc_params)
-                logger.debug(f'Self signed statement: {self_signed_config}')
+                    self_signed_config = self.get_signed_entity_statement(
+                        _tenant_url, self.httpc_params
+                    )
+                logger.debug(f"Self signed statement: {self_signed_config}")
             else:
                 raise MissingPage("No such page: '{}'".format(_url))
         except SSLError as err:
@@ -286,10 +302,10 @@ class Collector(ImpExp):
 
     def get_federation_fetch_endpoint(self, intermediate):
         # In cache
-        logger.debug(f'--get_federation_fetch_endpoint({intermediate})')
+        logger.debug(f"--get_federation_fetch_endpoint({intermediate})")
         _info = self.config_cache[intermediate]
         if _info:
-            logger.debug(f'Cached info: {_info}')
+            logger.debug(f"Cached info: {_info}")
             fed_fetch_endpoint = get_endpoint("fetch", _info)
         else:
             fed_fetch_endpoint = None
@@ -300,7 +316,7 @@ class Collector(ImpExp):
                 return None
 
             entity_config = verify_self_signed_signature(signed_entity_config)
-            logger.debug(f'Verified self signed statement: {entity_config}')
+            logger.debug(f"Verified self signed statement: {entity_config}")
             fed_fetch_endpoint = get_endpoint("fetch", entity_config)
             # update cache
             self.config_cache[intermediate] = entity_config
@@ -355,26 +371,32 @@ class Collector(ImpExp):
             fed_fetch_endpoint = self.get_federation_fetch_endpoint(authority)
             if fed_fetch_endpoint is None:
                 return None
-            logger.debug(f"Federation fetch endpoint: '{fed_fetch_endpoint}' for '{authority}'")
-            entity_statement = self.get_entity_statement(fed_fetch_endpoint, authority, entity_id)
+            logger.debug(
+                f"Federation fetch endpoint: '{fed_fetch_endpoint}' for '{authority}'"
+            )
+            entity_statement = self.get_entity_statement(
+                fed_fetch_endpoint, authority, entity_id
+            )
             # entity_statement is a signed JWT
             statement = unverified_entity_statement(entity_statement)
             logger.debug(
-                f"Unverified entity statement from {fed_fetch_endpoint} about {entity_id}: {statement}")
+                f"Unverified entity statement from {fed_fetch_endpoint} about {entity_id}: {statement}"
+            )
             self.entity_statement_cache[cache_key] = entity_statement
             time_key = "{}!exp!{}".format(authority, entity_id)
             self.entity_statement_cache[time_key] = statement["exp"]
 
         if entity_statement:
             authority_statement = self.config_cache[authority]
-            return entity_statement, self.collect_superiors(authority,
-                                                            authority_statement,
-                                                            seen=_seen,
-                                                            max_superiors=max_superiors)
+            return entity_statement, self.collect_superiors(
+                authority, authority_statement, seen=_seen, max_superiors=max_superiors
+            )
         else:
             return None
 
-    def collect_superiors(self, entity_id, statement, seen=None, max_superiors=1, stop_at=""):
+    def collect_superiors(
+        self, entity_id, statement, seen=None, max_superiors=1, stop_at=""
+    ):
         """
         Collect superiors one level at the time
 
@@ -390,20 +412,21 @@ class Collector(ImpExp):
         if seen is None:
             seen = []
 
-        logger.debug(f'Collect superiors to: {entity_id}')
-        logger.debug(f'Collect based on: {statement}')
-        if 'authority_hints' not in statement:
+        logger.debug(f"Collect superiors to: {entity_id}")
+        logger.debug(f"Collect based on: {statement}")
+        if "authority_hints" not in statement:
             logger.debug("No authority for this entity")
             return superior
-        elif statement['iss'] == stop_at:
+        elif statement["iss"] == stop_at:
             logger.debug("Reached trust anchor")
             return superior
 
-        for authority in statement['authority_hints']:
+        for authority in statement["authority_hints"]:
             if authority in seen:  # loop ?!
                 logger.warning(f"Loop detected at {authority}")
-            superior[authority] = self.collect_intermediate(entity_id, authority, seen,
-                                                            max_superiors)
+            superior[authority] = self.collect_intermediate(
+                entity_id, authority, seen, max_superiors
+            )
 
         return superior
 

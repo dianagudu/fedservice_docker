@@ -1,5 +1,7 @@
 #!/bin/bash
 
+update-ca-certificates
+
 [[ -f "/conf/.env" ]] && source "/conf/.env"
 
 [[ -z "${ENTITY_TYPE}" || ! -d "/app/${ENTITY_TYPE-}" ]] && (

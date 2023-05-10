@@ -18,32 +18,35 @@ logger = logging.getLogger(__name__)
 
 class FedProviderInfoDiscovery(ProviderInfoDiscovery):
     response_cls = ProviderConfigurationResponse
-    request_body_type = 'jose'
-    response_body_type = 'jose'
+    request_body_type = "jose"
+    response_body_type = "jose"
 
     def __init__(self, client_get, conf=None, client_authn_factory=None, **kwargs):
         ProviderInfoDiscovery.__init__(
-            self, client_get, conf=conf, client_authn_factory=client_authn_factory)
+            self, client_get, conf=conf, client_authn_factory=client_authn_factory
+        )
 
     def get_request_parameters(self, method="GET", **kwargs):
         try:
             _iss = kwargs["iss"]
         except KeyError:
-            _iss = self.client_get("service_context").get('issuer')
+            _iss = self.client_get("service_context").get("issuer")
 
-        qpart = {'iss': _iss}
+        qpart = {"iss": _iss}
 
-        for param in ['sub', 'aud', 'prefetch']:
+        for param in ["sub", "aud", "prefetch"]:
             try:
                 qpart[param] = kwargs[param]
             except KeyError:
                 pass
 
         p = urlparse(_iss)
-        _qurl = '{}://{}/.well-known/openid-federation?{}'.format(
-            p.scheme, p.netloc, urlencode(qpart))
 
-        return {'url': _qurl, 'iss': _iss}
+        _qurl = "{}://{}{}/.well-known/openid-federation?{}".format(
+            p.scheme, p.netloc, p.path.rstrip("/"), urlencode(qpart)
+        )
+
+        return {"url": _qurl, "iss": _iss}
 
     def store_federation_info(self, statement, trust_root_id):
         """
@@ -67,7 +70,7 @@ class FedProviderInfoDiscovery(ProviderInfoDiscovery):
         #     self.service_context.keyjar[self.service_context.issuer] = _kb
 
         _context = self.client_get("service_context")
-        _context.set('provider_info', _pi)
+        _context.set("provider_info", _pi)
         _context.federation_entity.federation = trust_root_id
 
     def update_service_context(self, trust_chains, **kwargs):
@@ -108,12 +111,16 @@ class FedProviderInfoDiscovery(ProviderInfoDiscovery):
         #  _fe_context.provider_info_per_trust_anchor = provider_info_per_trust_anchor
 
         _fe_context.proposed_authority_hints = create_authority_hints(
-            _fe_context.authority_hints, trust_chains)
+            _fe_context.authority_hints, trust_chains
+        )
 
         _pi = provider_info_per_trust_anchor[_trust_anchor]
-        _context.set('provider_info', _pi)
+        _context.set("provider_info", _pi)
         self._update_service_context(_pi)
-        _context.set('behaviour', map_configuration_to_preference(_pi, _context.client_preferences))
+        _context.set(
+            "behaviour",
+            map_configuration_to_preference(_pi, _context.client_preferences),
+        )
 
     def parse_response(self, info, sformat="", state="", **kwargs):
         # returns a list of TrustChain instances
@@ -122,7 +129,7 @@ class FedProviderInfoDiscovery(ProviderInfoDiscovery):
         trust_chains = [s for s in trust_chains if s is not None]
 
         if not trust_chains:
-            logger.error('Missing or faulty response')
+            logger.error("Missing or faulty response")
             raise ResponseError("Missing or faulty response")
 
         return trust_chains
@@ -143,7 +150,7 @@ class FedProviderInfoDiscovery(ProviderInfoDiscovery):
         trust chains
         """
         entity_statement = verify_self_signed_signature(response)
-        entity_id = entity_statement['iss']
+        entity_id = entity_statement["iss"]
 
         _fe = self.client_get("service_context").federation_entity
         _tree = _fe.collect_statement_chains(entity_id, entity_statement)
@@ -153,7 +160,7 @@ class FedProviderInfoDiscovery(ProviderInfoDiscovery):
         logger.debug("%s chains", len(_chains))
         for c in _chains:
             c.append(response)
-        return [eval_chain(c, _fe.context.keyjar, 'openid_provider') for c in _chains]
+        return [eval_chain(c, _fe.context.keyjar, "openid_provider") for c in _chains]
 
     def get_response(self, *args, **kwargs):
         """

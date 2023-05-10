@@ -108,7 +108,7 @@
     ],
     "entity_type": "openid_relying_party",
     "opponent_entity_type": "openid_provider",
-    "registration_type": "explmatic",
+    "registration_type": "explicit",
     "endpoint": {
       "fetch": {
         "path": "fetch",
@@ -196,7 +196,7 @@
         ]
       },
       "redirect_uris": [
-        "https://expl.fedservice.lh/authz_cb/local"
+        "https://expl.fedservice.lh/authz_cb"
       ],
       "services": {
         "discovery": {

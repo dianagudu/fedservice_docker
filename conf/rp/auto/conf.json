@@ -138,7 +138,7 @@
           "phone"
         ],
         "token_endpoint_auth_method": [
-          "private_key_jwt"
+          null
         ]
       },
       "redirect_uris": [
@@ -230,6 +230,56 @@
           "kwargs": {}
         }
       }
+    },
+    "CIE": {
+      "issuer": "https://cie-provider.spid-cie.fedservice.lh/oidc/op/",
+      "client_preferences": {
+        "token_endpoint_auth_method": [
+          "private_key_jwt"
+        ]
+      },
+      "response_types": [
+        "code"
+      ],
+      "scope": [
+        "openid"
+      ],
+      "redirect_uris": [
+        "https://auto.fedservice.lh/authz_cb"
+      ],
+      "services": {
+        "discovery": {
+          "class": "fedservice.rp.provider_info_discovery.FedProviderInfoDiscovery",
+          "kwargs": {}
+        },
+        "registration": {
+          "class": "fedservice.rp.registration.Registration",
+          "kwargs": {}
+        },
+        "authorization": {
+          "class": "fedservice.rp.authorization.FedAuthorization",
+          "kwargs": {}
+        },
+        "accesstoken": {
+          "class": "oidcrp.oidc.access_token.AccessToken",
+          "kwargs": {}
+        },
+        "refresh_accesstoken": {
+          "class": "oidcrp.oidc.refresh_access_token.RefreshAccessToken",
+          "kwargs": {}
+        },
+        "userinfo": {
+          "class": "oidcrp.oidc.userinfo.UserInfo",
+          "kwargs": {}
+        },
+        "end_session": {
+          "class": "oidcrp.oidc.end_session.EndSession",
+          "kwargs": {}
+        }
+      }
+    },
+    "SPID": {
+      "issuer": "https://trust-anchor.spid-cie.fedservice.lh/oidc/op/"
     }
   }
 }

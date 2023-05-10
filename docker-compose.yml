@@ -19,8 +19,9 @@ services:
   lu:
     image: ddgu/fedservice
     init: true
-    hostname: lu.fedservice.lh
+    hostname: lu.fed2
     networks:
+      - default
       - traefik
     labels:
       - traefik.enable=true
@@ -40,12 +41,14 @@ services:
     ports:
       - 6001:11833
     volumes:
+      - ./mkcertRootCA.crt:/usr/local/share/ca-certificates/mkcertRootCA.crt:ro
       - ./conf/intermediate/lu:/conf:ro
   umu:
     image: ddgu/fedservice
     init: true
-    hostname: umu.fedservice.lh
+    hostname: umu.fed2
     networks:
+      - default
       - traefik
     labels:
       - traefik.enable=true
@@ -65,12 +68,14 @@ services:
     ports:
       - 6002:11833
     volumes:
+      - ./mkcertRootCA.crt:/usr/local/share/ca-certificates/mkcertRootCA.crt:ro
       - ./conf/intermediate/umu:/conf:ro
   swamid:
     image: ddgu/fedservice
     init: true
-    hostname: swamid.fedservice.lh
+    hostname: swamid.fed2
     networks:
+      - default
       - traefik
     labels:
       - traefik.enable=true
@@ -90,12 +95,14 @@ services:
     ports:
       - 7002:11833
     volumes:
+      - ./mkcertRootCA.crt:/usr/local/share/ca-certificates/mkcertRootCA.crt:ro
       - ./conf/ta/swamid:/conf:ro
   seid:
     image: ddgu/fedservice
     init: true
-    hostname: seid.fedservice.lh
+    hostname: seid.fed2
     networks:
+      - default
       - traefik
     labels:
       - traefik.enable=true
@@ -115,12 +122,14 @@ services:
     ports:
       - 7001:11833
     volumes:
+      - ./mkcertRootCA.crt:/usr/local/share/ca-certificates/mkcertRootCA.crt:ro
       - ./conf/ta/seid:/conf:ro
   auto:
     image: ddgu/fedservice
     init: true
-    hostname: auto.fedservice.lh
+    hostname: auto.fed2
     networks:
+      - default
       - traefik
     labels:
       - traefik.enable=true
@@ -140,12 +149,14 @@ services:
     ports:
       - 4002:11833
     volumes:
+      - ./mkcertRootCA.crt:/usr/local/share/ca-certificates/mkcertRootCA.crt:ro
       - ./conf/rp/auto:/conf:ro
   expl:
     image: ddgu/fedservice
     init: true
-    hostname: expl.fedservice.lh
+    hostname: expl.fed2
     networks:
+      - default
       - traefik
     labels:
       - traefik.enable=true
@@ -165,12 +176,14 @@ services:
     ports:
       - 4001:11833
     volumes:
+      - ./mkcertRootCA.crt:/usr/local/share/ca-certificates/mkcertRootCA.crt:ro
       - ./conf/rp/expl:/conf:ro
   op:
     image: ddgu/fedservice
     init: true
-    hostname: op.fedservice.lh
+    hostname: op.fed2
     networks:
+      - default
       - traefik
     labels:
       - traefik.enable=true
@@ -190,8 +203,10 @@ services:
     ports:
       - 5000:11833
     volumes:
+      - ./mkcertRootCA.crt:/usr/local/share/ca-certificates/mkcertRootCA.crt:ro
       - ./conf/op/op:/conf:ro
 
 networks:
+  default:
   traefik:
     external: true
