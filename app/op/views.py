@@ -269,6 +269,7 @@ def service_endpoint(endpoint):
     except Exception as err:
         message = traceback.format_exception(*sys.exc_info())
         _log.error(message)
+        _log.error(str(req_args))
         err_msg = ResponseMessage(error="invalid_request", error_description=str(err))
         return make_response(err_msg.to_json(), 400)
 

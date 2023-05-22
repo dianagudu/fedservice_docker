@@ -26,6 +26,7 @@ services:
           - trust-anchor.spid-cie.fedservice.lh
           - cie-provider.spid-cie.fedservice.lh
           - relying-party.spid-cie.fedservice.lh
+          - relying-party-php.spid-cie.fedservice.lh
     labels:
       - traefik.enable=true
 

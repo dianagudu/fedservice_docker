@@ -10,12 +10,13 @@ from fedservice.message import EntityStatement
 
 
 def get_self_signed_entity_statement(entity_id):
-    _url = entity_id + "/.well-known/openid-federation"
+    _url = entity_id.rstrip("/") + "/.well-known/openid-federation"
     _response = requests.request("GET", _url, verify=False)
     # print("response: ", _response.text)
     _jws = factory(_response.text)
     # print("JWS: ", _jws)
     _payload = _jws.jwt.payload()
+    # print("payload: ", _payload)
     entity_statement = EntityStatement(**_payload)
     _key_jar = KeyJar()
     # verify  entity_statement["iss"]
