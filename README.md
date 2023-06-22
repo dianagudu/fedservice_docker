@@ -129,3 +129,63 @@ You can also display the payload of an entity that has the provided entity id (g
 ```bash
 docker-compose run display https://swamid.fedservice.testbed.oidcfed.incubator.geant.org
 ```
+
+## Onboarding an entity to an existing federation
+
+As an example, to onboard the OP 'https://op.fedservice.lh' to the italian federation (trust anchor 'https://trust-anchor.spid-cie.fedservice.lh/'), you need to:
+
+- add the trust anchor to the OP's list of authority hints:
+
+  ```bash
+  $ cat conf/op/op/authority_hints.json
+  [
+    "https://trust-anchor.spid-cie.fedservice.lh/",
+    "https://umu.fedservice.lh"
+  ]
+  ```
+
+- add the trust anchor to the OP's list of trusted roots, with the corresponding jwks:
+
+  ```bash
+  $ cat conf/op/op/trusted_roots.json
+  {
+    "https://seid.fedservice.lh": {
+      "keys": [
+        ...
+      ]
+    },
+    "https://swamid.fedservice.lh": {
+      "keys": [
+        ...
+      ]
+    },
+    "https://trust-anchor.spid-cie.fedservice.lh/": {
+      "keys": [
+        ...
+      ]
+    }
+  }
+  ```
+
+- restart the OP container
+- onboard the OP to the trust anchor at https://trust-anchor.spid-cie.fedservice.lh/onboarding/landing
+
+## Onboarding a new entity in this federation
+
+For example, add an RP as a direct subordinate of the trust anchor 'https://swamid.fedservice.lh':
+
+- make sure the entity has configured the trust anchor as a trusted root, with its corresponding jwks
+- make sure the entity has configured the trust anchor as an authority hint
+- add the entity as a subordinate of the trust anchor by adding a new file in `conf/ta/swamid/subordinates/{urlencoded_entity_id}`: the file should contain the entity's jwks
+
+  ```bash
+  $ cat conf/ta/swamid/subordinates/https%3A%2F%2Fgorp.fedservice.lh
+  {
+    "keys": [
+      ...
+    ]
+  }
+  ```
+
+- restart the trust anchor container
+- if you run the setup locally, you might need to add the new entity name to your /etc/hosts file (e.g. `127.0.0.1 gorp.fedservice.lh`), as well as an alias in the traefik network, in `traefik/docker-compose.yml`. Then restart the traefik container.
