@@ -27,6 +27,7 @@ services:
           - cie-provider.spid-cie.fedservice.lh
           - relying-party.spid-cie.fedservice.lh
           - relying-party-php.spid-cie.fedservice.lh
+          - gorp.fedservice.lh
     labels:
       - traefik.enable=true
 
