@@ -1,6 +1,7 @@
 #!/bin/bash
 
 update-ca-certificates
+cat /etc/ssl/certs/ca-certificates.crt >> `python -m certifi`
 
 [[ -f "/conf/.env" ]] && source "/conf/.env"
 
@@ -12,6 +13,11 @@ update-ca-certificates
 cd "/app/${ENTITY_TYPE}" || exit 1
 
 cp -ar /conf/* .
+# link to subordinates folder if it exists, instead of copying
+[[ -d "/conf/subordinates" ]] && (
+    rm -rf ./subordinates
+    ln -s /conf/subordinates ./subordinates
+)
 
 [[ ! -f "./conf.json" ]] && (
     echo "ERROR: Config file not found"
