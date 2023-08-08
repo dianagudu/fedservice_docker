@@ -7,7 +7,7 @@ services:
     user: ${UID}:${GID}
     volumes:
       - ./conf:/conf
-    profiles: ['setup']
+    profiles: [ 'setup' ]
   display:
     image: ddgu/fedservice
     entrypoint:
@@ -15,7 +15,7 @@ services:
       - "/app/display_entity.py"
     networks:
       - traefik
-    profiles: ['cmd']
+    profiles: [ 'cmd' ]
   lu:
     image: ddgu/fedservice
     init: true
@@ -44,7 +44,7 @@ services:
     ports:
       - 6001:11833
     volumes:
-      - ./conf/intermediate/lu:/conf:ro
+      - ./conf/intermediate/lu:/conf
   umu:
     image: ddgu/fedservice
     init: true
@@ -73,7 +73,7 @@ services:
     ports:
       - 6002:11833
     volumes:
-      - ./conf/intermediate/umu:/conf:ro
+      - ./conf/intermediate/umu:/conf
   swamid:
     image: ddgu/fedservice
     init: true
@@ -102,7 +102,7 @@ services:
     ports:
       - 7002:11833
     volumes:
-      - ./conf/ta/swamid:/conf:ro
+      - ./conf/ta/swamid:/conf
   seid:
     image: ddgu/fedservice
     init: true
@@ -131,7 +131,7 @@ services:
     ports:
       - 7001:11833
     volumes:
-      - ./conf/ta/seid:/conf:ro
+      - ./conf/ta/seid:/conf
   auto:
     image: ddgu/fedservice
     init: true
@@ -160,7 +160,7 @@ services:
     ports:
       - 4002:11833
     volumes:
-      - ./conf/rp/auto:/conf:ro
+      - ./conf/rp/auto:/conf
   expl:
     image: ddgu/fedservice
     init: true
@@ -189,7 +189,7 @@ services:
     ports:
       - 4001:11833
     volumes:
-      - ./conf/rp/expl:/conf:ro
+      - ./conf/rp/expl:/conf
   op:
     image: ddgu/fedservice
     init: true
@@ -218,7 +218,7 @@ services:
     ports:
       - 5000:11833
     volumes:
-      - ./conf/op/op:/conf:ro
+      - ./conf/op/op:/conf
 
 networks:
   traefik:
