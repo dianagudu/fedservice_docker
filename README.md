@@ -168,15 +168,24 @@ As an example, to onboard the OP 'https://op.fedservice.lh' to the italian feder
   ```
 
 - restart the OP container
+  ```bash
+  docker-compose restart op
+  ```
 - onboard the OP to the trust anchor at https://trust-anchor.spid-cie.fedservice.lh/onboarding/landing
 
 ## Onboarding a new entity in this federation
 
 For example, add an RP as a direct subordinate of the trust anchor 'https://swamid.fedservice.lh':
 
-- make sure the entity has configured the trust anchor as a trusted root, with its corresponding jwks
 - make sure the entity has configured the trust anchor as an authority hint
-- add the entity as a subordinate of the trust anchor by adding a new file in `conf/ta/swamid/subordinates/{urlencoded_entity_id}`: the file should contain the entity's jwks
+- OPTIONAL: add `swamid` as trusted root for the RP, with its corresponding jwks
+- onboard it by submitting a POST request to the trust anchor's onboarding endpoint:
+  ```bash
+  curl -d "sub={RP's entity_id}" -X POST https://swamid.fedservice.lh/onboarding
+  ```
+
+- ALTERNATIVELY, you can do it manually by:
+  - adding the entity as a subordinate of the trust anchor by adding a new file in `conf/ta/swamid/subordinates/{urlencoded_entity_id}`: the file should contain the entity's jwks
 
   ```bash
   $ cat conf/ta/swamid/subordinates/https%3A%2F%2Fgorp.fedservice.lh
@@ -186,6 +195,6 @@ For example, add an RP as a direct subordinate of the trust anchor 'https://swam
     ]
   }
   ```
+  - restarting the trust anchor container
 
-- restart the trust anchor container
 - if you run the setup locally, you might need to add the new entity name to your /etc/hosts file (e.g. `127.0.0.1 gorp.fedservice.lh`), as well as an alias in the traefik network, in `traefik/docker-compose.yml`. Then restart the traefik container.
