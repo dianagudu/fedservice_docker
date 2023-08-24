@@ -198,3 +198,10 @@ For example, add an RP as a direct subordinate of the trust anchor 'https://swam
   - restarting the trust anchor container
 
 - if you run the setup locally, you might need to add the new entity name to your /etc/hosts file (e.g. `127.0.0.1 gorp.fedservice.lh`), as well as an alias in the traefik network, in `traefik/docker-compose.yml`. Then restart the traefik container.
+
+----
+
+This work was started in and supported by the
+[Geant Trust & Identity Incubator](https://connect.geant.org/trust-and-identity-incubator).
+
+<img src="https://wiki.geant.org/download/attachments/120500419/incubator_logo.jpg" alt="Trust & Identity Incubator logo" height="75"/>
