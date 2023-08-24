@@ -28,6 +28,13 @@ services:
           - relying-party.spid-cie.fedservice.lh
           - relying-party-php.spid-cie.fedservice.lh
           - gorp.fedservice.lh
+          - go-ia.fedservice.lh
+          - edugain.fedservice.lh
+          - eduidhu.fedservice.lh
+          - incommon.fedservice.lh
+          - ukfederation.fedservice.lh
+          - delos.fedservice.lh
+          - haka.fedservice.lh
     labels:
       - traefik.enable=true
 
