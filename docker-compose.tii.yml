@@ -1,21 +1,6 @@
-version: '3.9'
+version: '3.7'
 
 services:
-  setup:
-    image: ddgu/fedservice
-    command: "/app/setup.sh"
-    user: ${UID}:${GID}
-    volumes:
-      - ./conf:/conf
-    profiles: [ 'setup' ]
-  display:
-    image: ddgu/fedservice
-    entrypoint:
-      - "python3"
-      - "/app/display_entity.py"
-    networks:
-      - traefik
-    profiles: [ 'cmd' ]
   lu:
     image: ddgu/fedservice
     init: true
