@@ -99,6 +99,12 @@ docker-compose run display https://swamid.localhost
 
 If the entity is an intermediate or trust anchor, that is has subordinates, it will also list the subordinates.
 
+You can also use the `ofcli` tool without installing it, by running the following command:
+
+```bash
+docker-compose run ofcli <command>
+```
+
 ## GEANT T&II setup
 
 We have a testbed federation setup at `fedservice.testbed.oidcfed.incubator.geant.org`:

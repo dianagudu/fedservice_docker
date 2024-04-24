@@ -14,8 +14,20 @@ services:
   display:
     image: ddgu/fedservice
     entrypoint:
-      - "python3"
-      - "/app/display_entity.py"
+      - "bash"
+      - "/app/display.sh"
+    volumes:
+      - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
+    networks:
+      - caddy
+    profiles: [ 'cmd' ]
+  ofcli:
+    image: ddgu/fedservice
+    entrypoint:
+      - "bash"
+      - "/app/ofcli.sh"
+    volumes:
+      - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
     networks:
       - caddy
     profiles: [ 'cmd' ]
@@ -31,7 +43,6 @@ services:
     ports:
       - 6001:80
     volumes:
-      - ./mkcertRootCA.crt:/usr/local/share/ca-certificates/mkcertRootCA.crt:ro
       - ./conf/intermediate/lu:/conf
   umu:
     image: ddgu/fedservice
@@ -45,7 +56,6 @@ services:
     ports:
       - 6002:80
     volumes:
-      - ./mkcertRootCA.crt:/usr/local/share/ca-certificates/mkcertRootCA.crt:ro
       - ./conf/intermediate/umu:/conf
   swamid:
     image: ddgu/fedservice
@@ -59,7 +69,6 @@ services:
     ports:
       - 7002:80
     volumes:
-      - ./mkcertRootCA.crt:/usr/local/share/ca-certificates/mkcertRootCA.crt:ro
       - ./conf/ta/swamid:/conf
   seid:
     image: ddgu/fedservice
@@ -73,7 +82,6 @@ services:
     ports:
       - 7001:80
     volumes:
-      - ./mkcertRootCA.crt:/usr/local/share/ca-certificates/mkcertRootCA.crt:ro
       - ./conf/ta/seid:/conf
   auto:
     image: ddgu/fedservice
@@ -87,7 +95,6 @@ services:
     ports:
       - 4002:80
     volumes:
-      - ./mkcertRootCA.crt:/usr/local/share/ca-certificates/mkcertRootCA.crt:ro
       - ./conf/rp/auto:/conf
   expl:
     image: ddgu/fedservice
@@ -101,7 +108,6 @@ services:
     ports:
       - 4001:80
     volumes:
-      - ./mkcertRootCA.crt:/usr/local/share/ca-certificates/mkcertRootCA.crt:ro
       - ./conf/rp/expl:/conf
   op:
     image: ddgu/fedservice
@@ -115,7 +121,6 @@ services:
     ports:
       - 5000:80
     volumes:
-      - ./mkcertRootCA.crt:/usr/local/share/ca-certificates/mkcertRootCA.crt:ro
       - ./conf/op/op:/conf
   # tm-personalized:
   #   image: ddgu/fedservice
@@ -129,7 +134,7 @@ services:
   #   ports:
   #     - 6009:80
   #   volumes:
-  #     - ./mkcertRootCA.crt:/usr/local/share/ca-certificates/mkcertRootCA.crt:ro
+  #     - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
   #     - ./conf/tmi/tm-personalized:/conf
   caddy:
     image: caddy:2-alpine
