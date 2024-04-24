@@ -13,16 +13,16 @@
 This repo builds a federation which consists of:
 
 - relying parties:
-  - [auto](https://auto.fedservice.lh): RP that uses automatic registration
-  - [expl](https://expl.fedservice.lh): RP that uses explicit registration
+  - [auto](https://auto.localhost): RP that uses automatic registration
+  - [expl](https://expl.localhost): RP that uses explicit registration
 - OIDC providers:
-  - [op](https://op.fedservice.lh)
+  - [op](https://op.localhost)
 - intermediate entities:
-  - [umu](https://umu.fedservice.lh)
-  - [lu](https://lu.fedservice.lh)
+  - [umu](https://umu.localhost)
+  - [lu](https://lu.localhost)
 - trust anchors:
-  - [seid](https://seid.fedservice.lh)
-  - [swamid](https://swamid.fedservice.lh)
+  - [seid](https://seid.localhost)
+  - [swamid](https://swamid.localhost)
 
 The trust relationships are depicted below:
 
@@ -94,7 +94,7 @@ All the entities will expose the `/.well-known/openid-federation` endpoint, acco
 You can also display the payload of an entity that has the provided entity id (given by its URL) as follows:
 
 ```bash
-docker-compose run display https://swamid.fedservice.lh
+docker-compose run display https://swamid.localhost
 ```
 
 If the entity is an intermediate or trust anchor, that is has subordinates, it will also list the subordinates.
@@ -125,15 +125,15 @@ docker-compose run display https://swamid.fedservice.testbed.oidcfed.incubator.g
 
 ## Onboarding an entity to an existing federation
 
-As an example, to onboard the OP 'https://op.fedservice.lh' to the italian federation (trust anchor 'https://trust-anchor.spid-cie.fedservice.lh/'), you need to:
+As an example, to onboard the OP 'https://op.localhost' to the italian federation (trust anchor 'https://trust-anchor.spid-cie.localhost/'), you need to:
 
 - add the trust anchor to the OP's list of authority hints:
 
   ```bash
   $ cat conf/op/op/authority_hints.json
   [
-    "https://trust-anchor.spid-cie.fedservice.lh/",
-    "https://umu.fedservice.lh"
+    "https://trust-anchor.spid-cie.localhost/",
+    "https://umu.localhost"
   ]
   ```
 
@@ -142,17 +142,17 @@ As an example, to onboard the OP 'https://op.fedservice.lh' to the italian feder
   ```bash
   $ cat conf/op/op/trusted_roots.json
   {
-    "https://seid.fedservice.lh": {
+    "https://seid.localhost": {
       "keys": [
         ...
       ]
     },
-    "https://swamid.fedservice.lh": {
+    "https://swamid.localhost": {
       "keys": [
         ...
       ]
     },
-    "https://trust-anchor.spid-cie.fedservice.lh/": {
+    "https://trust-anchor.spid-cie.localhost/": {
       "keys": [
         ...
       ]
@@ -164,24 +164,24 @@ As an example, to onboard the OP 'https://op.fedservice.lh' to the italian feder
   ```bash
   docker-compose restart op
   ```
-- onboard the OP to the trust anchor at https://trust-anchor.spid-cie.fedservice.lh/onboarding/landing
+- onboard the OP to the trust anchor at https://trust-anchor.spid-cie.localhost/onboarding/landing
 
 ## Onboarding a new entity in this federation
 
-For example, add an RP as a direct subordinate of the trust anchor 'https://swamid.fedservice.lh':
+For example, add an RP as a direct subordinate of the trust anchor 'https://swamid.localhost':
 
 - make sure the entity has configured the trust anchor as an authority hint
 - OPTIONAL: add `swamid` as trusted root for the RP, with its corresponding jwks
 - onboard it by submitting a POST request to the trust anchor's onboarding endpoint:
   ```bash
-  curl -d "sub={RP's entity_id}" -X POST https://swamid.fedservice.lh/onboarding
+  curl -d "sub={RP's entity_id}" -X POST https://swamid.localhost/onboarding
   ```
 
 - ALTERNATIVELY, you can do it manually by:
   - adding the entity as a subordinate of the trust anchor by adding a new file in `conf/ta/swamid/subordinates/{urlencoded_entity_id}`: the file should contain the entity's jwks
 
   ```bash
-  $ cat conf/ta/swamid/subordinates/https%3A%2F%2Fgorp.fedservice.lh
+  $ cat conf/ta/swamid/subordinates/https%3A%2F%2Fgorp.localhost
   {
     "keys": [
       ...
@@ -190,7 +190,7 @@ For example, add an RP as a direct subordinate of the trust anchor 'https://swam
   ```
   - restarting the trust anchor container
 
-- if you run the setup locally, you might need to add the new entity name to your /etc/hosts file (e.g. `127.0.0.1 gorp.fedservice.lh`), as well as an alias in the traefik network, in `traefik/docker-compose.yml`. Then restart the traefik container.
+- if you run the setup locally, you might need to add the new entity name to your /etc/hosts file (e.g. `127.0.0.1 gorp.localhost`), as well as an alias in the traefik network, in `traefik/docker-compose.yml`. Then restart the traefik container.
 
 ----
 

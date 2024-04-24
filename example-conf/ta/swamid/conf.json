@@ -1,6 +1,6 @@
 {
   "entity": {
-    "entity_id": "https://swamid.fedservice.lh",
+    "entity_id": "https://swamid.localhost",
     "key_config": {
       "private_path": "private/fed_keys.json",
       "key_defs": [

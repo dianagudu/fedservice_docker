@@ -1,6 +1,6 @@
 {
   "entity": {
-    "entity_id": "https://op.fedservice.lh",
+    "entity_id": "https://op.localhost",
     "key_config": {
       "private_path": "private/fed_keys.json",
       "key_defs": [
@@ -27,7 +27,7 @@
   },
   "entity_type": {
     "openid_provider": {
-      "base_url": "https://op.fedservice.lh",
+      "base_url": "https://op.localhost",
         "httpc_params": {
           "verify": false
         },
@@ -279,7 +279,7 @@
           "kwargs": {
             "default_values": {
               "name": "oidc_op",
-              "domain": "op.fedservice.lh",
+              "domain": "op.localhost",
               "path": "/",
               "max_age": 3600
             }

@@ -145,14 +145,14 @@ services:
     networks:
       caddy:
         aliases:
-          - op.fedservice.lh
-          - auto.fedservice.lh
-          - expl.fedservice.lh
-          - lu.fedservice.lh
-          - umu.fedservice.lh
-          - seid.fedservice.lh
-          - swamid.fedservice.lh
-          # - tm-personalized.fedservice.lh
+          - op.localhost
+          - auto.localhost
+          - expl.localhost
+          - lu.localhost
+          - umu.localhost
+          - seid.localhost
+          - swamid.localhost
+          # - tm-personalized.localhost
 
 networks:
   caddy:

@@ -1,42 +1,42 @@
-op.fedservice.lh {
+op.localhost {
 	reverse_proxy op:80
 }
-www.op.fedservice.lh {
-	redir https://op.fedservice.lh{uri}
+www.op.localhost {
+	redir https://op.localhost{uri}
 }
-auto.fedservice.lh {
+auto.localhost {
 	reverse_proxy auto:80
 }
-www.auto.fedservice.lh {
-	redir https://auto.fedservice.lh{uri}
+www.auto.localhost {
+	redir https://auto.localhost{uri}
 }
-expl.fedservice.lh {
+expl.localhost {
 	reverse_proxy expl:80
 }
-www.expl.fedservice.lh {
-	redir https://expl.fedservice.lh{uri}
+www.expl.localhost {
+	redir https://expl.localhost{uri}
 }
-lu.fedservice.lh {
+lu.localhost {
 	reverse_proxy lu:80
 }
-www.lu.fedservice.lh {
-	redir https://lu.fedservice.lh{uri}
+www.lu.localhost {
+	redir https://lu.localhost{uri}
 }
-umu.fedservice.lh {
+umu.localhost {
 	reverse_proxy umu:80
 }
-www.umu.fedservice.lh {
-	redir https://umu.fedservice.lh{uri}
+www.umu.localhost {
+	redir https://umu.localhost{uri}
 }
-swamid.fedservice.lh {
+swamid.localhost {
 	reverse_proxy swamid:80
 }
-www.swamid.fedservice.lh {
-	redir https://swamid.fedservice.lh{uri}
+www.swamid.localhost {
+	redir https://swamid.localhost{uri}
 }
-seid.fedservice.lh {
+seid.localhost {
 	reverse_proxy seid:80
 }
-www.seid.fedservice.lh {
-	redir https://seid.fedservice.lh{uri}
+www.seid.localhost {
+	redir https://seid.localhost{uri}
 }

@@ -1,10 +1,10 @@
 {
   "entity": {
-    "entity_id": "https://lu.fedservice.lh",
+    "entity_id": "https://lu.localhost",
     "preference": {
       "organization_name": "LU",
-      "homepage_uri": "https://lu.fedservice.lh",
-      "contacts": "operations@lu.fedservice.lh"
+      "homepage_uri": "https://lu.localhost",
+      "contacts": "operations@lu.localhost"
     },
     "key_config": {
       "private_path": "private/fed_keys.json",

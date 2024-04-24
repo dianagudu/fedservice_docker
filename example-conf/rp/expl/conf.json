@@ -1,7 +1,7 @@
 {
   
   "entity": {
-    "entity_id": "https://expl.fedservice.lh",
+    "entity_id": "https://expl.localhost",
     "key_config": {
       "private_path": "private/fed_keys.json",
       "key_defs": [
@@ -108,13 +108,13 @@
         },
         "clients": {
           "OP": {
-            "issuer": "https://op.fedservice.lh",
+            "issuer": "https://op.localhost",
             "redirect_uris": [
-              "https://expl.fedservice.lh/authz_cb"
+              "https://expl.localhost/authz_cb"
             ]
           },
           "CIE": {
-            "issuer": "https://cie-provider.spid-cie.fedservice.lh/oidc/op/",
+            "issuer": "https://cie-provider.spid-cie.localhost/oidc/op/",
             "client_preferences": {
               "token_endpoint_auth_method": [
                 "private_key_jwt"
@@ -127,7 +127,7 @@
               "openid"
             ],
             "redirect_uris": [
-              "https://expl.fedservice.lh/authz_cb"
+              "https://expl.localhost/authz_cb"
             ]
           }
         }
