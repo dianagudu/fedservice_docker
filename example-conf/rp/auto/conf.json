@@ -70,7 +70,8 @@
             "profile",
             "email",
             "address",
-            "phone"
+            "phone",
+            "eduperson_assurance"
           ],
           "token_endpoint_auth_method": [
             "private_key_jwt"
@@ -109,23 +110,6 @@
         "clients": {
           "OP": {
             "issuer": "https://op.localhost",
-            "redirect_uris": [
-              "https://auto.localhost/authz_cb"
-            ]
-          },
-          "CIE": {
-            "issuer": "https://cie-provider.spid-cie.localhost/oidc/op/",
-            "client_preferences": {
-              "token_endpoint_auth_method": [
-                "private_key_jwt"
-              ]
-            },
-            "response_types": [
-              "code"
-            ],
-            "scope": [
-              "openid"
-            ],
             "redirect_uris": [
               "https://auto.localhost/authz_cb"
             ]

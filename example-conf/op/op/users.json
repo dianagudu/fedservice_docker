@@ -13,7 +13,13 @@
       "locality": "Umeå",
       "postal_code": "SE-90187",
       "country": "Sweden"
-    }
+    },
+    "eduperson_assurance": [
+      "https://refeds.org/assurance",
+      "https://refeds.org/assurance/ID/unique",
+      "https://refeds.org/assurance/IAP/medium",
+      "https://refeds.org/assurance/profile/cappuccino"
+    ]
   },
   "babs": {
     "sub": "babs0001",
@@ -29,7 +35,13 @@
       "region": "CA",
       "postal_code": "91608",
       "country": "USA"
-    }
+    },
+    "eduperson_assurance": [
+      "https://refeds.org/assurance",
+      "https://refeds.org/assurance/ID/unique",
+      "https://refeds.org/assurance/IAP/medium",
+      "https://refeds.org/assurance/profile/cappuccino"
+    ]
   },
   "upper": {
     "sub": "uppe0001",
@@ -37,6 +49,11 @@
     "given_name": "Upper",
     "family_name": "Crust",
     "email": "uc@example.com",
-    "email_verified": true
+    "email_verified": true,
+    "eduperson_assurance": [
+      "https://refeds.org/assurance",
+      "https://refeds.org/assurance/ID/unique",
+      "https://refeds.org/assurance/IAP/low"
+    ]
   }
 }

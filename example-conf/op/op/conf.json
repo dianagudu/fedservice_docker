@@ -327,6 +327,9 @@
                 "sub",
                 "iss",
                 "eduperson_scoped_affiliation"
+              ],
+              "eduperson_assurance": [
+                "eduperson_assurance"
               ]
             }
           },
