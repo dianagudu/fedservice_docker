@@ -1,234 +1,180 @@
-import json
 import logging
-from typing import Any
 from typing import Callable
-from typing import List
 from typing import Optional
-from typing import Union
 
-from cryptojwt import KeyJar
 from cryptojwt import as_unicode
+from cryptojwt import KeyJar
 from cryptojwt.jws.jws import factory
-from oidcmsg.configure import Configuration
-from oidcmsg.context import OidcContext
-from oidcop.util import build_endpoints
-from oidcop.util import importer
+from cryptojwt.utils import importer
+from idpyoidc.client.client_auth import client_auth_setup
+from idpyoidc.server.util import execute
+from idpyoidc.util import instantiate
 from requests import request
 
-from fedservice import message
-from fedservice.entity_statement.collect import Collector
-from fedservice.entity_statement.collect import branch2lists
-from fedservice.entity_statement.create import create_entity_statement
-from fedservice.entity_statement.verify import eval_chain
-from fedservice.utils import load_json
+from fedservice.entity.function import apply_policies
+from fedservice.entity.function import collect_trust_chains
+from fedservice.entity.function import get_payload
+from fedservice.entity.function import get_verified_trust_chains
+from fedservice.entity.function import verify_trust_chains
 
 __author__ = 'Roland Hedberg'
+
+from fedservice.entity.context import FederationContext
+from idpyoidc.node import Unit
 
 logger = logging.getLogger(__name__)
 
 
-def do_endpoints(conf, server_get):
-    endpoints = build_endpoints(conf["endpoint"], server_get=server_get, issuer=conf["entity_id"])
-
-    _cap = conf.get("capabilities", {})
-
-    for endpoint, endpoint_instance in endpoints.items():
-        if endpoint_instance.endpoint_info:
-            for key, val in endpoint_instance.endpoint_info.items():
-                if key not in _cap:
-                    _cap[key] = val
-
-    return endpoints
-
-
-def create_self_signed_trust_marks(spec, **kwargs):
-    if isinstance(spec["function"], str):
-        _func = importer(spec["function"])
-    else:
-        _func = spec["function"]
-
-    res = []
-    for id, content in spec["kwargs"].items():
-        _args = kwargs.copy()
-        _args.update(content)
-        res.append(_func(id=id, sub=id, **_args))
-    return res
-
-
-class FederationContext(OidcContext):
-    parameter = OidcContext.parameter.copy()
-    parameter.update({
-        "entity_type": "",
-        "opponent_entity_type": "",
-        "registration_type": "",
-        "default_lifetime": 0,
-        "trusted_roots": {},
-        "collector": Collector,
-        "authority_hints": [],
-        "tr_priority": [],
-        "trust_mark_issuer": None,
-        "signed_trust_marks": [],
-        "trust_marks": []
-    })
-
-    def __init__(self,
-                 config: Union[dict, Configuration],
-                 entity_id: str = "",
-                 server_get: Callable = None,
-                 keyjar: Optional[KeyJar] = None,
-                 authority_hints: Optional[Union[List[str], str]] = None,
-                 default_lifetime: Optional[int] = 86400,
-                 priority: Optional[List[str]] = None,
-                 entity_type: Optional[str] = '',
-                 opponent_entity_type: Optional[str] = '',
-                 registration_type: Optional[str] = '',
-                 trust_marks: Optional[List[str]] = None
-                 ):
-
-        self.config = config
-        self.server_get = server_get
-        self.entity_id = entity_id or config.get("entity_id")
-
-        OidcContext.__init__(self, config, keyjar, entity_id=self.entity_id)
-
-        self.entity_type = entity_type or config.get("entity_type")
-        self.opponent_entity_type = opponent_entity_type or config.get("opponent_entity_type", "")
-        self.registration_type = registration_type or config.get("registration_type", "")
-        self.default_lifetime = default_lifetime or config.get("default_lifetime", 0)
-        self.trust_mark_issuer = None
-        self.signed_trust_marks = []
-        self.trust_marks = trust_marks or config.get("trust_marks", [])
-
-        _trusted_roots = config.get("trusted_roots")
-        if _trusted_roots is None:
-            # Must be trust anchor then
-            self.trusted_roots = {}
-        elif isinstance(_trusted_roots, str):
-            self.trusted_roots = json.loads(open(_trusted_roots).read())
-        else:
-            self.trusted_roots = _trusted_roots
-
-        # Store own keys in the key jar under the entity's ID
-        self.keyjar.import_jwks(self.keyjar.export_jwks(private=True), issuer_id=self.entity_id)
-
-        for iss, jwks in self.trusted_roots.items():
-            self.keyjar.import_jwks(jwks, iss)
-
-        if authority_hints is not None:
-            self.authority_hints = authority_hints
-        else:
-            _hints = config.get("authority_hints")
-            if _hints is None:
-                print(f"{_hints}, {self.trusted_roots}")
-                # if self.trusted_roots != {}:
-                #     raise ConfigurationError("Missing authority_hints specification")
-                self.authority_hints = []
-            elif isinstance(_hints, str):
-                self.authority_hints = json.loads(open(_hints).read())
-            else:
-                self.authority_hints = _hints
-
-        if priority:
-            self.tr_priority = priority
-        elif 'priority' in config:
-            self.tr_priority = config["priority"]
-        else:
-            self.tr_priority = sorted(set(self.trusted_roots.keys()))
-
-        _sstm = config.get("self_signed_trust_marks")
-        if _sstm:
-            self.signed_trust_marks = create_self_signed_trust_marks(entity_id=self.entity_id,
-                                                                     keyjar=self.keyjar,
-                                                                     spec=_sstm)
-
-    def create_entity_statement(self, iss, sub, key_jar=None, metadata=None, metadata_policy=None,
-                                authority_hints=None, lifetime=0, jwks=None, **kwargs):
-        if jwks:
-            kwargs["jwks"] = jwks
-        else:
-            if "keys" in kwargs:
-                kwargs["jwks"] = {'keys': kwargs["keys"]}
-                del kwargs["keys"]
-
-        key_jar = key_jar or self.keyjar
-
-        if not authority_hints:
-            authority_hints = self.authority_hints
-        if not lifetime:
-            lifetime = self.default_lifetime
-
-        return create_entity_statement(iss, sub, key_jar=key_jar, metadata=metadata,
-                                       metadata_policy=metadata_policy,
-                                       authority_hints=authority_hints, lifetime=lifetime, **kwargs)
-
-    def make_configuration_statement(self):
-        _metadata = self.server_get("metadata")
-        kwargs = {}
-        if self.authority_hints:
-            kwargs["authority_hints"] = self.authority_hints
-        if self.trust_marks:
-            kwargs["trust_marks"] = self.trust_marks
-
-        return self.create_entity_statement(iss=self.entity_id, sub=self.entity_id,
-                                            metadata=_metadata, **kwargs)
-
-
-class FederationEntity(object):
+class FederationEntity(Unit):
     name = "federation_entity"
 
     def __init__(self,
+                 upstream_get: Optional[Callable] = None,
                  entity_id: str = "",
-                 config: Optional[Union[dict, Configuration]] = None,
-                 httpc: Optional[Any] = None,
-                 cwd: Optional[str] = '',
-                 httpc_params: Optional[dict] = None):
+                 keyjar: Optional[KeyJar] = None,
+                 key_conf: Optional[dict] = None,
+                 client: Optional[dict] = None,
+                 server: Optional[dict] = None,
+                 function: Optional[dict] = None,
+                 httpc: Optional[object] = None,
+                 httpc_params: Optional[dict] = None,
+                 preference: Optional[dict] = None,
+                 authority_hints: Optional[list] = None,
+                 persistence: Optional[dict] = None,
+                 client_authn_methods: Optional[list] = None,
+                 **kwargs
+                 ):
 
-        if config is None:
-            config = {}
-
-        if httpc is None:
+        if upstream_get is None and httpc is None:
             httpc = request
 
-        if httpc_params is None:
-            httpc_params = config.get("httpc_params", {})
+        if not keyjar and not key_conf:
+            keyjar = False
 
-        if not entity_id:
-            entity_id = config.get("entity_id")
+        self.entity_id = entity_id
+        Unit.__init__(self, upstream_get=upstream_get, keyjar=keyjar, httpc=httpc,
+                      httpc_params=httpc_params, key_conf=key_conf, issuer_id=entity_id)
 
-        self.context = FederationContext(config=config, entity_id=entity_id,
-                                         server_get=self.server_get)
+        _args = {
+            "upstream_get": self.unit_get,
+            "httpc": self.httpc,
+            "httpc_params": self.httpc_params,
+            "entity_id": entity_id
+        }
 
-        self.collector = Collector(trust_anchors=self.context.trusted_roots,
-                                   http_cli=httpc, cwd=cwd, httpc_params=httpc_params)
+        self.client = self.server = self.function = None
+        for key, val in [('client', client), ('server', server), ('function', function)]:
+            if val:
+                _kwargs = val["kwargs"].copy()
+                _kwargs.update(_args)
+                setattr(self, key, instantiate(val["class"], **_kwargs))
 
-        if config.get("entity_id") is None:
-            config['entity_id'] = entity_id
+        self.context = FederationContext(entity_id=entity_id, upstream_get=self.unit_get,
+                                         authority_hints=authority_hints, keyjar=self.keyjar,
+                                         preference=preference)
 
-        if 'endpoint' in config:
-            self.endpoint = do_endpoints(config, self.server_get)
+        if client_authn_methods:
+            self.context.client_authn_methods = client_auth_setup(client_authn_methods)
+
+        self.trust_chain = {}
+
+        if persistence:
+            _storage = execute(persistence["kwargs"]["storage"])
+            _class = persistence["class"]
+            kwargs = {"storage": _storage, "upstream_get": self.unit_get}
+            if isinstance(_class, str):
+                self.persistence = importer(_class)(**kwargs)
+            else:
+                self.persistence = _class(**kwargs)
+
+    def get_context(self, *arg):
+        return self.context
+
+    def get_federation_entity(self):
+        return self
+
+    def get_entity(self):
+        return self
+
+    def get_entity_type(self, entity_type):
+        if entity_type == "federation_entity":
+            return self
         else:
-            self.endpoint = {}
+            return None
 
-    def collect_statement_chains(self, entity_id, statement):
-        return self.collector.collect_superiors(entity_id, statement)
+    def get_attribute(self, attr, *args):
+        try:
+            val = getattr(self, attr)
+        except AttributeError:
+            if self.upstream_get:
+                return self.upstream_get('attribute', attr)
+            else:
+                return None
+        else:
+            if not val:
+                if self.upstream_get:
+                    return self.upstream_get('attribute', attr)
+                else:
+                    return None
+            else:
+                return val
 
-    def eval_chains(self, chains, entity_type='', apply_policies=True):
-        """
+    def get_function(self, function_name, *args):
+        if self.function:
+            try:
+                return getattr(self.function, function_name)
+            except AttributeError:
+                return None
 
-        :param chains: A list of lists of signed JWT
-        :param entity_type: The leafs entity type
-        :param apply_policies: Apply metadata policies from the list on the the metadata of the
-            leaf entity
-        :return: List of TrustChain instances
-        """
-        _context = self.context
-        if not entity_type:
-            entity_type = _context.opponent_entity_type
+    def get_metadata(self):
+        metadata = self.get_context().claims.prefer
+        # collect endpoints
+        metadata.update(self.get_endpoint_claims())
+        _issuer = getattr(self.server.context, "trust_mark_server", None)
+        return {"federation_entity": metadata}
 
-        return [eval_chain(c, _context.keyjar, entity_type, apply_policies) for c in chains]
+    def get_preferences(self):
+        preference = self.get_context().claims.prefer
+        # collect endpoints
+        preference.update(self.get_endpoint_claims())
+        return {"federation_entity": preference}
 
-    def get_configuration_information(self, subject_id):
-        return self.collector.get_configuration_information(subject_id)
+    def get_all_endpoints(self, *arg):
+        if self.server:
+            return list(self.server.endpoint.keys())
+        else:
+            return None
+
+    def get_endpoint(self, endpoint_name, *arg):
+        if self.server is None:
+            return None
+
+        try:
+            return self.server.get_endpoint(endpoint_name)
+        except KeyError:
+            return None
+
+    def get_service(self, service_name, *arg):
+        try:
+            return self.client.get_service(service_name)
+        except KeyError:
+            return None
+
+    def get_all_services(self, *args):
+        return list(self.client.service.db.keys())
+
+    def get_authority_hints(self, *args):
+        if isinstance(self.context.authority_hints, list):
+            return self.context.authority_hints
+        else:
+            return list(self.context.authority_hints)
+
+    def get_context_attribute(self, attr, *args):
+        _val = getattr(self.context, attr, None)
+        if not _val and self.upstream_get:
+            return self.upstream_get('context_attribute', attr)
+        else:
+            return _val
 
     def pick_trust_chain(self, trust_chains):
         """
@@ -257,120 +203,137 @@ class FederationEntity(object):
         _jwt = factory(_jws)
         return _jwt.jwt.payload()
 
-    def collect_trust_chains(self, self_signed_statement, metadata_type):
-        """
+    def supported(self):
+        _supports = self.context.supports()
+        if self.server:
+            _supports.update(self.server.context.supports())
+        return _supports
 
-        :param self_signed_statement: A Self signed Entity Statement
-        :param metadata_type: One of the metadata types defined in the specification
-        :return:
-        """
-        payload = self.get_payload(self_signed_statement)
+    def get_endpoint_claims(self):
+        _info = {}
+        for endp in self.server.endpoint.values():
+            if endp.endpoint_name:
+                _info[endp.endpoint_name] = endp.full_path
+                for arg, claim in [("client_authn_method", "auth_methods"),
+                                   ("auth_signing_alg_values", "auth_signing_alg_values")]:
+                    _val = getattr(endp, arg, None)
+                    if _val:
+                        # trust_mark_status_endpoint_auth_methods_supported
+                        md_param = f"{endp.name}_endpoint_{claim}_supported"
+                        _info[md_param] = _val
+        return _info
 
-        # collect trust chains
-        _tree = self.collect_statement_chains(payload['iss'], payload)
-        _node = {payload['iss']: (self_signed_statement, _tree)}
-        _chains = branch2lists(_node)
-        logger.debug("%s chains", len(_chains))
+    def get_trust_chain(self, entity_id):
+        _trust_chains = self.trust_chain.get(entity_id)
+        if _trust_chains is None:
+            _trust_chains = get_verified_trust_chains(self, entity_id)
 
-        # verify the trust paths and apply policies
-        return [eval_chain(c, self.context.keyjar, metadata_type) for c in _chains]
-
-    def server_get(self, what, *arg):
-        _func = getattr(self, "get_{}".format(what), None)
-        if _func:
-            return _func(*arg)
-        return None
-
-    def get_context(self, *arg):
-        return self.context
-
-    def get_endpoint_context(self, *arg):
-        return self.context
-
-    def federation_endpoint_metadata(self):
-        _config = self.context.config
-        metadata = {}
-        # collect endpoints
-        endpoints = {}
-        for key, item in self.endpoint.items():
-            if key in ["fetch", "list", "status", "evaluate"]:
-                endpoints[f"federation_{key}_endpoint"] = item.full_path
-        for attr in message.FederationEntity.c_param.keys():
-            if attr in _config:
-                metadata[attr] = _config[attr]
-            elif attr in endpoints:
-                metadata[attr] = endpoints[attr]
-        return {"federation_entity": metadata}
-
-    def get_metadata(self):
-        _config = self.context.config
-        return self.federation_endpoint_metadata()
-
-    def get_endpoints(self, *arg):
-        return self.endpoint
-
-    def get_endpoint(self, endpoint_name, *arg):
-        try:
-            return self.endpoint[endpoint_name]
-        except KeyError:
+        if _trust_chains:
+            self.trust_chain[entity_id] = _trust_chains
+            return _trust_chains[0]
+        else:
             return None
 
-    def get_entity(self):
-        return self
+    def store_trust_chains(self, entity_id, chains):
+        self.trust_chain[entity_id] = chains
 
-    def dump(self):
-        return {
-            "context": self.context.dump(),
-            "collector": self.collector.dump()
-        }
+    def get_verified_metadata(self, entity_id: str, *args):
+        _trust_chains = self.trust_chain.get(entity_id)
+        if _trust_chains is None:
+            _trust_chains = get_verified_trust_chains(self, entity_id)
+            if _trust_chains:
+                self.trust_chain[entity_id] = _trust_chains
 
-    def load(self, dump):
-        self.collector.load(dump.get("collector", {}))
-        self.context.load(dump.get("context", {}))
+        if _trust_chains:
+            return _trust_chains[0].metadata
+        else:
+            return None
 
-    def get_client_id(self):
-        return self.context.entity_id
+    def get_federation_entity_metadata(self, entity_id: str, *args):
+        metadata = self.get_verified_metadata(entity_id, *args)
+        if metadata:
+            return metadata["federation_entity"]
+        else:
+            return metadata
 
+    def do_request(
+            self,
+            request_type: str,
+            response_body_type: Optional[str] = "",
+            request_args: Optional[dict] = None,
+            behaviour_args: Optional[dict] = None,
+            **kwargs):
+        return self.client.do_request(request_type=request_type,
+                                      response_body_type=response_body_type,
+                                      request_args=request_args, behaviour_args=behaviour_args,
+                                      **kwargs)
 
-def create_federation_entity(entity_id, httpc=None, httpc_params=None, cwd="", **kwargs):
-    args = {"httpc_params": httpc_params}
-    _conf = {}
+    def trawl(self, superior, subordinate, entity_type):
+        if subordinate in self.function.trust_chain_collector.config_cache:
+            _ec = self.function.trust_chain_collector.config_cache[subordinate]
+        else:
+            _es = self.client.do_request("entity_statement", issuer=superior, subject=subordinate)
 
-    _key_conf = kwargs.get("keys")
-    if _key_conf:
-        kwargs["key_conf"] = _key_conf
+            # add subjects key/-s to keyjar
+            self.get_federation_entity().keyjar.import_jwks(_es["jwks"], _es["sub"])
 
-    for param in ['trusted_roots', 'authority_hints']:
-        try:
-            _conf[param] = load_json(kwargs[param])
-        except KeyError:
-            pass
+            # Fetch Entity Configuration
+            _ec = self.client.do_request("entity_configuration", entity_id=subordinate)
 
-    for param in ['entity_type', 'priority', 'opponent_entity_type',
-                  'registration_type', 'cwd', 'endpoint']:
-        try:
-            _conf[param] = kwargs[param]
-        except KeyError:
-            pass
+        if "federation_list_endpoint" not in _ec["metadata"]["federation_entity"]:
+            return []
 
-    for _key in ['key_conf', 'db_conf', 'issuer']:
-        _value = kwargs.get(_key)
-        if _value:
-            _conf[_key] = _value
+        # One step down the tree
+        # All subordinates that are of a specific entity_type
+        _issuers = self.client.do_request("list",
+                                          entity_id=subordinate,
+                                          entity_type=entity_type)
+        if _issuers is None:
+            _issuers = []
 
-    if _conf:
-        _conf['httpc_params'] = args['httpc_params']
-        args['config'] = _conf
+        # All subordinates that are intermediates
+        _intermediates = self.client.do_request("list",
+                                                entity_id=subordinate,
+                                                intermediate=True)
 
-    federation_entity = FederationEntity(entity_id, httpc=httpc, cwd=cwd, **args)
+        # For all intermediates go further down the tree
+        if _intermediates:
+            for entity_id in _intermediates:
+                _ids = self.trawl(subordinate, entity_id, entity_type)
+                if _ids:
+                    _issuers.extend(_ids)
 
-    add_ons = kwargs.get("add_on")
-    if add_ons:
-        for spec in add_ons.values():
-            if isinstance(spec["function"], str):
-                _func = importer(spec["function"])
+        return _issuers
+
+    def verify_trust_mark(self, trust_mark: str, check_with_issuer: Optional[bool] = True):
+        _trust_mark_payload = get_payload(trust_mark)
+        _tmi_trust_chain = self.get_trust_chain(_trust_mark_payload['iss'])
+
+        # Verifies the signature of the Trust Mark
+        verified_trust_mark = self.function.trust_mark_verifier(
+            trust_mark=trust_mark, trust_anchor=_tmi_trust_chain.anchor)
+
+        if check_with_issuer:
+            # This to check that the Trust Mark is still valid according to the Trust Mark Issuer
+            resp = self.do_request("trust_mark_status",
+                                   request_args={
+                                       'sub': verified_trust_mark['sub'],
+                                       'id': verified_trust_mark['id']
+                                   },
+                                   fetch_endpoint=_tmi_trust_chain.metadata["federation_entity"][
+                                       "federation_trust_mark_status_endpoint"]
+                                   )
+            if "active" in resp and resp["active"] == True:
+                pass
             else:
-                _func = spec["function"]
-            _func(federation_entity, **spec["kwargs"])
+                return None
 
-    return federation_entity
+        return verified_trust_mark
+
+    @property
+    def trust_anchors(self):
+        return self.get_function("trust_chain_collector").trust_anchors
+
+    @trust_anchors.setter
+    def trust_anchors(self, value):
+        self.get_function("trust_chain_collector").trust_anchors = value

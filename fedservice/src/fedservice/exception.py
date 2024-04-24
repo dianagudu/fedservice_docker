@@ -6,6 +6,10 @@ class NoSuitableFederation(FedServiceError):
     pass
 
 
+class NoTrustedChains(FedServiceError):
+    pass
+
+
 class NoTrustedClaims(FedServiceError):
     pass
 
@@ -31,4 +35,16 @@ class UnknownEntity(FedServiceError):
 
 
 class UnknownCriticalExtension(FedServiceError):
+    pass
+
+
+class FailedConfigurationRetrieval(Exception):
+    pass
+
+
+class SignatureFailure(FedServiceError):
+    pass
+
+
+class FailedInformationRetrieval(Exception):
     pass
