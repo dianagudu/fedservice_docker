@@ -1,0 +1,31 @@
+{
+  "entity": {
+    "entity_id": "https://swamid.fedservice.lh",
+    "key_config": {
+      "private_path": "private/fed_keys.json",
+      "key_defs": [
+        {
+          "type": "RSA",
+          "use": [
+            "sig"
+          ]
+        },
+        {
+          "type": "EC",
+          "crv": "P-256",
+          "use": [
+            "sig"
+          ]
+        }
+      ],
+      "public_path": "static/fed_keys.json",
+      "read_only": false
+    },
+    "subordinate": "file:subordinates.json",
+    "endpoints": [
+      "entity_configuration",
+      "fetch",
+      "list"
+    ]
+  }
+}

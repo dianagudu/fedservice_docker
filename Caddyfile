@@ -1,0 +1,42 @@
+op.fedservice.lh {
+	reverse_proxy op:80
+}
+www.op.fedservice.lh {
+	redir https://op.fedservice.lh{uri}
+}
+auto.fedservice.lh {
+	reverse_proxy auto:80
+}
+www.auto.fedservice.lh {
+	redir https://auto.fedservice.lh{uri}
+}
+expl.fedservice.lh {
+	reverse_proxy expl:80
+}
+www.expl.fedservice.lh {
+	redir https://expl.fedservice.lh{uri}
+}
+lu.fedservice.lh {
+	reverse_proxy lu:80
+}
+www.lu.fedservice.lh {
+	redir https://lu.fedservice.lh{uri}
+}
+umu.fedservice.lh {
+	reverse_proxy umu:80
+}
+www.umu.fedservice.lh {
+	redir https://umu.fedservice.lh{uri}
+}
+swamid.fedservice.lh {
+	reverse_proxy swamid:80
+}
+www.swamid.fedservice.lh {
+	redir https://swamid.fedservice.lh{uri}
+}
+seid.fedservice.lh {
+	reverse_proxy seid:80
+}
+www.seid.fedservice.lh {
+	redir https://seid.fedservice.lh{uri}
+}

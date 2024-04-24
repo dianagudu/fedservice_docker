@@ -10,14 +10,14 @@
       "level": "DEBUG"
     },
     "loggers": {
-      "idp": {
+      "bobcat_idp": {
         "level": "DEBUG"
       }
     },
     "handlers": {
       "default": {
         "class": "logging.FileHandler",
-        "filename": "/log/debug.log",
+        "filename": "log/debug.log",
         "formatter": "default"
       },
       "console": {
@@ -32,8 +32,11 @@
       }
     }
   },
+  "entity": {},
   "webserver": {
+    "cert_chain": null,
     "port": 80,
-    "domain": "0.0.0.0"
+    "domain": "0.0.0.0",
+    "debug": true
   }
 }

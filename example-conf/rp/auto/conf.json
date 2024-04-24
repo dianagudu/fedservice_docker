@@ -1,0 +1,137 @@
+{
+  
+  "entity": {
+    "entity_id": "https://auto.fedservice.lh",
+    "key_config": {
+      "private_path": "private/fed_keys.json",
+      "key_defs": [
+        {
+          "type": "RSA",
+          "key": "",
+          "use": [
+            "sig"
+          ]
+        },
+        {
+          "type": "EC",
+          "crv": "P-256",
+          "use": [
+            "sig"
+          ]
+        }
+      ],
+      "public_path": "static/fed_keys.json",
+      "read_only": false
+    },
+    "httpc_params": {
+      "verify": false
+    },
+    "authority_hints": "file:authority_hints.json",
+    "trust_anchors": "file:trust_anchors.json",
+    "endpoints": [
+      "fetch",
+      "entity_configuration"
+    ],
+    "entity_type": {
+      "openid_relying_party": {
+        "key_conf": {
+          "private_path": "private/jwks.json",
+          "key_defs": [
+            {
+              "type": "RSA",
+              "key": "",
+              "use": [
+                "sig"
+              ]
+            },
+            {
+              "type": "EC",
+              "crv": "P-256",
+              "use": [
+                "sig"
+              ]
+            }
+          ],
+          "public_path": "static/jwks.json",
+          "read_only": false,
+          "uri_path": "static/jwks.json"
+        },
+        "preference": {
+          "application_name": "rphandler",
+          "application_type": "web",
+          "contacts": [
+            "ops@example.com"
+          ],
+          "response_types": [
+            "code"
+          ],
+          "scope": [
+            "openid",
+            "profile",
+            "email",
+            "address",
+            "phone"
+          ],
+          "token_endpoint_auth_method": [
+            "private_key_jwt"
+          ]
+        },
+        "services": {
+          "discovery": {
+            "class": "fedservice.rp.provider_info_discovery.FedProviderInfoDiscovery",
+            "kwargs": {}
+          },
+          "registration": {
+            "class": "fedservice.rp.registration.Registration",
+            "kwargs": {}
+          },
+          "authorization": {
+            "class": "idpyoidc.client.oidc.authorization.Authorization",
+            "kwargs": {}
+          },
+          "accesstoken": {
+            "class": "idpyoidc.client.oidc.access_token.AccessToken",
+            "kwargs": {}
+          },
+          "refresh_accesstoken": {
+            "class": "idpyoidc.client.oidc.refresh_access_token.RefreshAccessToken",
+            "kwargs": {}
+          },
+          "userinfo": {
+            "class": "idpyoidc.client.oidc.userinfo.UserInfo",
+            "kwargs": {}
+          },
+          "end_session": {
+            "class": "idpyoidc.client.oidc.end_session.EndSession",
+            "kwargs": {}
+          }
+        },
+        "clients": {
+          "OP": {
+            "issuer": "https://op.fedservice.lh",
+            "redirect_uris": [
+              "https://auto.fedservice.lh/authz_cb"
+            ]
+          },
+          "CIE": {
+            "issuer": "https://cie-provider.spid-cie.fedservice.lh/oidc/op/",
+            "client_preferences": {
+              "token_endpoint_auth_method": [
+                "private_key_jwt"
+              ]
+            },
+            "response_types": [
+              "code"
+            ],
+            "scope": [
+              "openid"
+            ],
+            "redirect_uris": [
+              "https://auto.fedservice.lh/authz_cb"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

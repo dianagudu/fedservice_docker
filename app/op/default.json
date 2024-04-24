@@ -36,7 +36,7 @@
     "server_cert": "certs/example.crt",
     "server_key": "certs/example.key",
     "cert_chain": null,
-    "port": 11833,
+    "port": 80,
     "domain": "0.0.0.0",
     "debug": true
   }

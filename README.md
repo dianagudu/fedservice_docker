@@ -4,9 +4,9 @@
 
 ## Project structure
 
-- [fedservice](fedservice): Python implementation of OIDC federation
+- [deps/fedservice](deps/fedservice): Python implementation of OIDC federation
 - [app](app): Python (w/ Flask) code to run different federation entities
-- [conf](conf): configuration folder for example federation setup
+- [example-conf](example-conf): configuration folder for example federation setup
 
 ## Federation example
 
@@ -28,70 +28,63 @@ The trust relationships are depicted below:
 
 ![Federation Example](FederationExample.jpg "Federation example")
 
-Each entity has a configuration folder in [conf/{entity_type}/{entity_name}](conf).
+### Build Docker Image
 
-The entities will run at [https://{entity_name}.fedservice.lh](https://{entity_name}.fedservice.lh).
-
-If you need to change the domain names, replace `fedservice.lh` everywhere where it appears in:
-
-- [conf](conf)
-- [docker-compose.yml](docker-compose.yml)
-- [traefik](traefik)
-
-Or use the provided script:
+The docker image is available on [Docker Hub](https://hub.docker.com/r/ddgu/fedservice/). You can pull it with the following command:
 
 ```bash
-./update-domain.sh $MY_DOMAIN
+    docker pull ddgu/fedservice
 ```
 
-### Initial setup
-
-You will first need to generate jwks keys for each entity and create the trust relationships. To do this, run:
+However, if you want to build the docker image yourself, you must first retrieve the latest source code for its dependencies. The script `build.sh` will do this for you, and then build the docker image.
 
 ```bash
-docker-compose run setup
+    ./build.sh
 ```
 
-This will add all the necessary keys and configurations in conf.
+This will create a directory called `deps` and clone the following repositories into it:
 
-You can customise anything in the configuration files in conf, if necessary.
+* [fedservice](https://github.com/rohe/fedservice)
 
-### Traefik
+It will also apply any necessary patches to the dependencies.
 
-Configure and run the traefik reverse proxy. This will allow you to access the federation entities at the domain names mentioned above.
+Then it will build the docker image `ddgu/fedservice` and tag it with the current date and time.
 
-- create a self-signed certificate for the domain name `fedservice.lh` and its sub-domains:
+### Configure test environment
+
+An example setup is provided in the `example-conf` directory. The `example-conf` directory contains an `entities.json` file and multiple directories, one for each entity type.
+
+The following entity types are supported:
+
+* `op`: openid provider
+* `rp`: relying party
+* `intermediate`: intermediate entity in a federation
+* `ta`: trust anchor
+
+Each entity type directory contains subdirectories, one for each entity, named after the entity and containing the configuration file for that entity, named `config.json`.
+
+The `entities.json` file contains a dictionary of entities, where the key is the entity name and the value is a dictionary containing the following keys:
+
+* `type`: the entity type
+* `authority_hints`: a list of authority hints for the entity
+* `trust_anchors`: a list of trust anchors for the entity
+* `trust_marks` (optional): a dictionary of trust marks for the entity, where the key is the trust mark issuer (its name) and the value is the trust mark (URL).
+
+To configure the test environment, you must run the `configure.sh` script, which will copy the content of `example-conf` to a new folder `conf` and create additional configuration files for each entity, based on the `entities.json` file (such as `authority_hints.json` and `trust_anchors.json`). The script will also create a `caddy` directory, which contains the configuration files for the Caddy web server.
+
+If you are not running the test environment on your local machine, you must also pass the domain name to the `configure.sh` script, and it will first replace the domain name in the configuration files with the domain name of the machine you are running the test environment on.
 
 ```bash
-# If it's the first install of mkcert, run
-mkcert -install
-mkcert -cert-file traefik/certs/local-cert.pem -key-file traefik/certs/local-key.pem "fedservice.lh" "*.fedservice.lh"
+    ./configure.sh [<domain>]
 ```
 
-- get mkcert's root CA certificate to add it to all the containers' trust stores:
+### Deploy test environment
+
+To deploy the test environment, you only need the `conf` and `caddy` directories, as well as the `docker-compose.yml` file.
 
 ```bash
-cp "$(mkcert -CAROOT)/rootCA.pem" mkcertRootCA.pem
-```
-
-- create a docker network for traefik
-
-```bash
-docker network create traefik
-```
-
-- start the traefik container (this will run in the background)
-
-```bash
-docker-compose -f traefik/docker-compose.yml up -d
-```
-
-### Run the federation
-
-To start up all the federation entities, run:
-
-```bash
-docker-compose up
+    docker network create caddy
+    docker-compose up -d
 ```
 
 ### Testing

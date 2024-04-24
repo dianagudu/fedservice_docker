@@ -1,0 +1,34 @@
+{
+  "entity": {
+    "entity_id": "https://umu.fedservice.lh",
+    "preference": {
+      "organization_name": "UMU",
+      "homepage_uri": "https://umu.fedservice.lh",
+      "contacts": "operations@umu.fedservice.lh"
+    },
+    "key_config": {
+      "private_path": "private/fed_keys.json",
+      "key_defs": [
+        {
+          "type": "RSA",
+          "use": [
+            "sig"
+          ]
+        },
+        {
+          "type": "EC",
+          "crv": "P-256",
+          "use": [
+            "sig"
+          ]
+        }
+      ],
+      "public_path": "static/fed_keys.json",
+      "read_only": false
+    },
+    "authority_hints": "file:authority_hints.json",
+    "trust_anchors": "file:trust_anchors.json",
+    "subordinate": "file:subordinates.json",
+    "endpoints": ["entity_configuration", "fetch", "list"]
+  }
+}
