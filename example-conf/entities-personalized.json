@@ -1,0 +1,73 @@
+{
+    "op": {
+      "type": "op",
+      "authority_hints": [
+        "umu"
+      ],
+      "trust_anchors": [
+        "swamid", "seid"
+      ]
+    },
+    "auto": {
+      "type": "rp",
+      "authority_hints": [
+        "lu"
+      ],
+      "trust_anchors": [
+        "swamid", "seid"
+      ],
+      "trust_marks": {
+        "tm-personalized": "https://refeds.org/category/personalized/rp"
+      }
+    },
+    "expl": {
+      "type": "rp",
+      "authority_hints": [
+        "lu"
+      ],
+      "trust_anchors": [
+        "swamid", "seid"
+      ],
+      "trust_marks": {
+        "tm-personalized": "https://refeds.org/category/personalized/rp"
+      }
+    },
+    "tm-personalized": {
+      "type": "tmi",
+      "authority_hints": [
+        "swamid", "seid"
+      ],
+      "trust_anchors": [
+        "swamid", "seid"
+      ]
+    },
+    "lu": {
+      "type": "intermediate",
+      "authority_hints": [
+        "swamid", "seid"
+      ],
+      "trust_anchors": [
+        "swamid", "seid"
+      ]
+    },
+    "umu": {
+      "type": "intermediate",
+      "authority_hints": [
+        "swamid", "seid"
+      ],
+      "trust_anchors": [
+        "swamid", "seid"
+      ]
+    },
+    "swamid": {
+      "type": "ta",
+      "authority_hints": [],
+      "trust_anchors": []
+    },
+    "seid": {
+      "type": "ta",
+      "authority_hints": [],
+      "trust_anchors": []
+    }
+  }
+  

@@ -4,12 +4,17 @@ import sys
 
 from cryptojwt.utils import importer
 from fedservice.combo import FederationCombo
+from flask import Config
 from flask.app import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 from idpyoidc.client.util import lower_or_upper
 from idpyoidc.logging import configure_logging
 from idpyoidc.ssl_context import create_context
 from idpyoidc.util import load_config_file
+from fedservice.appclient import init_oidc_rp_handler
+from idpyoidc.configure import Configuration
+from idpyoidc.configure import create_from_config_file
+from fedservice.configure import FedRPConfiguration
 
 from fedservice.utils import make_federation_combo
 from utils import load_values_from_file
@@ -39,10 +44,18 @@ def init_app(config_file, name=None, subdir="", **kwargs) -> Flask:
     app.cnf = _cnf
     app.cnf["cwd"] = dir_path
     app.server = make_federation_combo(**app.cnf["entity"])
-    if isinstance(app.server, FederationCombo):
-        app.federation_entity = app.server["federation_entity"]
-    else:
-        app.federation_entity = app.server
+
+    # app.srv_config = create_from_config_file(Configuration,
+    #                                         entity_conf=[
+    #                                             {"class": FedRPConfiguration,
+    #                                             "attr": "rp"}],
+    #                                         filename=config_file, base_path=dir_path)
+    app.rp_config = create_from_config_file(
+        Configuration,
+        filename=config_file, base_path=dir_path)
+
+    # Initialize the rp after views to be able to set correct urls
+    app.rph = init_oidc_rp_handler(app, dir_path)
 
     return app
 

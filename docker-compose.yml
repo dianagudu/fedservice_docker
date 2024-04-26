@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   setup:
     image: ddgu/fedservice
@@ -9,6 +7,7 @@ services:
       - "/conf"
     user: ${UID}:${GID}
     volumes:
+      - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
       - ./conf:/conf
     profiles: [ 'setup' ]
   display:
@@ -43,6 +42,7 @@ services:
     ports:
       - 6001:80
     volumes:
+      - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
       - ./conf/intermediate/lu:/conf
   umu:
     image: ddgu/fedservice
@@ -56,6 +56,7 @@ services:
     ports:
       - 6002:80
     volumes:
+      - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
       - ./conf/intermediate/umu:/conf
   swamid:
     image: ddgu/fedservice
@@ -69,6 +70,7 @@ services:
     ports:
       - 7002:80
     volumes:
+      - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
       - ./conf/ta/swamid:/conf
   seid:
     image: ddgu/fedservice
@@ -82,6 +84,7 @@ services:
     ports:
       - 7001:80
     volumes:
+      - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
       - ./conf/ta/seid:/conf
   auto:
     image: ddgu/fedservice
@@ -95,6 +98,7 @@ services:
     ports:
       - 4002:80
     volumes:
+      - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
       - ./conf/rp/auto:/conf
   expl:
     image: ddgu/fedservice
@@ -108,6 +112,7 @@ services:
     ports:
       - 4001:80
     volumes:
+      - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
       - ./conf/rp/expl:/conf
   op:
     image: ddgu/fedservice
@@ -121,6 +126,7 @@ services:
     ports:
       - 5000:80
     volumes:
+      - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
       - ./conf/op/op:/conf
   # tm-personalized:
   #   image: ddgu/fedservice

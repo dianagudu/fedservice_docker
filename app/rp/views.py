@@ -23,7 +23,7 @@ def send_js(filename):
 
 @entity.route('/')
 def index():
-    _providers = current_app.cnf.rp.clients.keys()
+    _providers = current_app.cnf["entity"]["entity_type"]["openid_relying_party"]["clients"].keys()
     return render_template('opbyuid.html', providers=_providers)
 
 
@@ -33,7 +33,7 @@ def irp():
 
 
 def get_rph():
-    return current_app.server["openid_relying_party"].rph
+    return current_app.rph
 
 # @entity.route('/<string:op_hash>/.well-known/openid-federation')
 @entity.route('/.well-known/openid-federation')
@@ -45,7 +45,8 @@ def wkof():
         # Any client will do
         cli = _rph.issuer2rp[list(_rph.issuer2rp.keys())[0]]
 
-    _registration = cli.client_get("service", "registration")
+    # _registration = cli.client_get("service", "registration")
+    _registration = _rph.do_client_registration(cli)
     _jws = _registration.construct()
 
     response = make_response(_jws)
