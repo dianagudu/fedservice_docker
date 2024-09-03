@@ -26,9 +26,32 @@
       "public_path": "static/fed_keys.json",
       "read_only": false
     },
-    "authority_hints": "file:authority_hints.json",
-    "trust_anchors": "file:trust_anchors.json",
-    "subordinate": "file:subordinates.json",
-    "endpoints": ["entity_configuration", "fetch", "list"]
+    "authority_hints": {
+      "class": "idpyoidc.storage.listfile.ReadOnlyListFile",
+      "kwargs": {
+        "file_name": "authority_hints"
+      }
+    },
+    "trust_anchors": {
+      "class": "idpyoidc.storage.abfile.AbstractFileSystem",
+      "kwargs": {
+        "fdir": "trust_anchors",
+        "key_conv": "idpyoidc.util.Base64",
+        "value_conv": "idpyoidc.util.JSON"
+      }
+    },
+    "subordinate": {
+      "class": "idpyoidc.storage.abfile.AbstractFileSystem",
+      "kwargs": {
+        "fdir": "subordinates",
+        "key_conv": "idpyoidc.util.Base64",
+        "value_conv": "idpyoidc.util.JSON"
+      }
+    },
+    "endpoints": [
+      "entity_configuration",
+      "fetch",
+      "list"
+    ]
   }
 }

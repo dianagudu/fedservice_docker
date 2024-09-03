@@ -5,38 +5,26 @@ import sys
 from cryptojwt.utils import importer
 from fedservice.combo import FederationCombo
 from flask.app import Flask
-from werkzeug.middleware.proxy_fix import ProxyFix
 from idpyoidc.client.util import lower_or_upper
 from idpyoidc.logging import configure_logging
 from idpyoidc.ssl_context import create_context
 from idpyoidc.util import load_config_file
 
 from fedservice.utils import make_federation_combo
-from utils import load_values_from_file
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
-#template_dir = os.path.join(dir_path, 'templates')
 
-
-def init_app(config_file, name=None, subdir="", **kwargs) -> Flask:
-    name = name or __name__
-    _cnf = load_config_file(f"{config_file}")
-    _cnf = load_values_from_file(_cnf)
-
-    if "template_dir" in _cnf:
-        kwargs["template_folder"] = os.path.join(dir_path, subdir, _cnf["template_dir"])
-
-    app = Flask(name, static_url_path='', **kwargs)
-    app.wsgi_app = ProxyFix(app.wsgi_app)
+def init_app(config_file, dir_name, subdir, **kwargs) -> Flask:
+    name = dir_name or __name__
+    app = Flask(name, static_url_path="", **kwargs)
     sys.path.insert(0, dir_path)
-    app.config['SECRET_KEY'] = os.urandom(12).hex()
 
-    entity = importer(f"{subdir}.views.entity")
+    entity = importer(f"{dir_name}.views.entity")
     app.register_blueprint(entity)
 
     # Initialize the oidc_provider after views to be able to set correct urls
-    app.cnf = _cnf
+    app.cnf = load_config_file(f"{dir_name}/{config_file}")
     app.cnf["cwd"] = dir_path
     app.server = make_federation_combo(**app.cnf["entity"])
     if isinstance(app.server, FederationCombo):
@@ -49,16 +37,19 @@ def init_app(config_file, name=None, subdir="", **kwargs) -> Flask:
 
 if __name__ == "__main__":
     print(sys.argv)
-    name = sys.argv[1]
+    directory_name = sys.argv[1]
     conf = sys.argv[2]
     subdir = sys.argv[3]
-    template_dir = os.path.join(dir_path, 'templates')
-    app = init_app(conf, name, subdir=subdir)
+
+    template_dir = os.path.join(dir_path, subdir, "templates")
+    app = init_app(conf, directory_name, subdir, template_folder=template_dir)
     if "logging" in app.cnf:
         configure_logging(config=app.cnf["logging"])
     _web_conf = app.cnf["webserver"]
-
-    print('Listening on {}:{}'.format(_web_conf.get('domain'), _web_conf.get('port')))
+    print("Listening on {}:{}".format(_web_conf.get("domain"), _web_conf.get("port")))
     # app.rph.federation_entity.collector.web_cert_path = _cert
-    app.run(host=_web_conf.get('domain'), port=_web_conf.get('port'),
-            debug=_web_conf.get("debug", False))
+    app.run(
+        host=_web_conf.get("domain"),
+        port=_web_conf.get("port"),
+        debug=_web_conf.get("debug"),
+    )

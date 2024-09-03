@@ -330,18 +330,7 @@
               ],
               "eduperson_assurance": [
                 "eduperson_assurance"
-              ],
-              "personalized": [
-                "sub",
-                "name",
-                "given_name",
-                "family_name",
-                "email",
-                "email_verified",
-                "eduperson_affiliation",
-                "schac_home_organization",
-                "eduperson_assurance"
-              ]  
+              ]
             }
           },
           "automatic_registration": {

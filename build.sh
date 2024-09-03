@@ -7,7 +7,7 @@ echo "################ Clone repositories"
 git clone https://github.com/rohe/fedservice
 
 echo "################ Update repositories"
-cd fedservice && git pull && git apply ../../fix_trust_marks.patch && cd ..
+cd fedservice && git pull && cd .. #git apply ../../fix_trust_marks.patch && cd ..
 
 echo "################ Build docker image"
 cd ..

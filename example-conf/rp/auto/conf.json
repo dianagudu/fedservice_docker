@@ -108,18 +108,11 @@
           }
         },
         "clients": {
-          "local": {
+          "http://op": {
             "issuer": "http://op",
             "redirect_uris": [
               "http://auto/authz_cb"
             ]
-          },
-          "local-personalized": {
-            "issuer": "http://op",
-            "redirect_uris": [
-              "http://auto/authz_cb"
-            ],
-            "scope": ["personalized"]
           }
         }
       }

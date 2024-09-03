@@ -19,9 +19,7 @@
       "https://refeds.org/assurance/ID/unique",
       "https://refeds.org/assurance/IAP/medium",
       "https://refeds.org/assurance/profile/cappuccino"
-    ],
-    "schac_home_organization": "https://umu.se",
-    "eduperson_affiliation": "alum"
+    ]
   },
   "babs": {
     "sub": "babs0001",

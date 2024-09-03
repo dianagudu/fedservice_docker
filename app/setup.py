@@ -23,7 +23,7 @@ if not os.path.isdir(config_folder):
     sys.exit(1)
 
 
-ENTITY = json.loads(open(f"{config_folder}/entities.json", 'r').read())
+ENTITY = json.loads(open(f"{config_folder}/entities.json", "r").read())
 
 
 def get_federation_entity(entity):
@@ -60,8 +60,8 @@ for ent, info in ENTITY.items():
                 subordinates[auth] = {}
             _ent_id = get_federation_entity(fed_entity[ent]).entity_id
             _sub_info = {
-                'jwks': get_federation_entity(fed_entity[ent]).keyjar.export_jwks(),
-                'authority_hints': [fed_entity[auth].entity_id],
+                "jwks": get_federation_entity(fed_entity[ent]).keyjar.export_jwks(),
+                "authority_hints": [fed_entity[auth].entity_id],
             }
             if fed_entity[ent].server.subordinate != {}:
                 _sub_info["intermediate"] = True
@@ -85,7 +85,7 @@ for ent, info in ENTITY.items():
         for issuer_id, tm_id in info["trust_marks"].items():
             os.chdir(f"{config_folder}/tmi/{issuer_id}")
             _fed_entity = get_federation_entity(fed_entity[issuer_id])
-            _tm_issuer = combo_entity[issuer_id]["trust_mark_issuer"]
+            _tm_issuer = combo_entity[issuer_id]
             entity_id = get_federation_entity(fed_entity[ent]).entity_id
             trust_marks.append(_tm_issuer.create_trust_mark(tm_id, entity_id))
         os.chdir(f"{config_folder}/{info['type']}/{ent}")
@@ -95,7 +95,7 @@ for ent, info in ENTITY.items():
 
 trust_anchors = {}
 for ent, info in trust_anchor.items():
-    for k,v in info.items():
+    for k, v in info.items():
         trust_anchors[k] = v
 
 for auth, val in subordinates.items():
