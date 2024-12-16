@@ -4,6 +4,7 @@ import sys
 import os
 
 from fedservice import combo
+from idpyoidc.storage.abfile import AbstractFileSystem
 from idpyoidc.util import load_config_file
 
 from fedservice.combo import FederationCombo
@@ -61,36 +62,25 @@ for ent, info in ENTITY.items():
             _ent_id = get_federation_entity(fed_entity[ent]).entity_id
             _sub_info = {
                 "jwks": get_federation_entity(fed_entity[ent]).keyjar.export_jwks(),
-                "authority_hints": [fed_entity[auth].entity_id],
             }
             if fed_entity[ent].server.subordinate != {}:
                 _sub_info["intermediate"] = True
             if ent in combo_entity:
-                _sub_info["entity_type"] = list(combo_entity[ent]._part.keys())
+                _sub_info["entity_types"] = list(combo_entity[ent]._part.keys())
             else:
-                _sub_info["entity_type"] = ["federation_entity"]
+                _sub_info["entity_types"] = ["federation_entity"]
 
             subordinates[auth][_ent_id] = _sub_info
         print(f"authority_hints: {authorities}")
-        with open("authority_hints.json", "w") as fp:
-            fp.write(json.dumps(authorities))
+        with open("authority_hints", "w") as fp:
+            for auth in authorities:
+                fp.write(f"{auth}\n")
     if "trust_anchors" in info and info["trust_anchors"]:
         trust_anchor[ent] = {}
         for anch in info["trust_anchors"]:
             _fed_entity = get_federation_entity(fed_entity[anch])
             _ent_id = _fed_entity.entity_id
             trust_anchor[ent][_ent_id] = _fed_entity.keyjar.export_jwks()
-    if "trust_marks" in info and info["trust_marks"]:
-        trust_marks = []
-        for issuer_id, tm_id in info["trust_marks"].items():
-            os.chdir(f"{config_folder}/tmi/{issuer_id}")
-            _fed_entity = get_federation_entity(fed_entity[issuer_id])
-            _tm_issuer = combo_entity[issuer_id]
-            entity_id = get_federation_entity(fed_entity[ent]).entity_id
-            trust_marks.append(_tm_issuer.create_trust_mark(tm_id, entity_id))
-        os.chdir(f"{config_folder}/{info['type']}/{ent}")
-        with open("trust_marks.json", "w") as fp:
-            fp.write(json.dumps(trust_marks))
 
 
 trust_anchors = {}
@@ -100,8 +90,13 @@ for ent, info in trust_anchor.items():
 
 for auth, val in subordinates.items():
     os.chdir(f"{config_folder}/{ENTITY[auth]['type']}/{auth}")
-    with open("subordinates.json", "w") as fp:
-        fp.write(json.dumps(val))
+    sub_dict = AbstractFileSystem(
+        fdir="subordinates",
+        key_conv="idpyoidc.util.Base64",
+        value_conv="idpyoidc.util.JSON",
+    )
+    for k, v in val.items():
+        sub_dict[k] = v
 
     print(f"*** subordinates@{auth} ***")
     for sub, info in val.items():
@@ -110,8 +105,13 @@ for auth, val in subordinates.items():
 
 for ent, val in trust_anchor.items():
     os.chdir(f"{config_folder}/{ENTITY[ent]['type']}/{ent}")
-    with open("trust_anchors.json", "w") as fp:
-        fp.write(json.dumps(val))
+    ta_dict = AbstractFileSystem(
+        fdir="trust_anchors",
+        key_conv="idpyoidc.util.Base64",
+        value_conv="idpyoidc.util.JSON",
+    )
+    for k, v in val.items():
+        ta_dict[k] = v
 
     print(f"*** trust_anchors@{ent} ***")
     for sub, info in val.items():

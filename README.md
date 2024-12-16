@@ -22,7 +22,6 @@ This repo builds a federation which consists of:
   - [lu](https://lu.localhost)
 - trust anchors:
   - [seid](https://seid.localhost)
-  - [swamid](https://swamid.localhost)
 
 The trust relationships are depicted below:
 
@@ -45,6 +44,7 @@ However, if you want to build the docker image yourself, you must first retrieve
 This will create a directory called `deps` and clone the following repositories into it:
 
 * [fedservice](https://github.com/rohe/fedservice)
+* [idpy-oidc](https://github.com/IdentityPython/idpy-oidc)
 
 It will also apply any necessary patches to the dependencies.
 
@@ -68,7 +68,6 @@ The `entities.json` file contains a dictionary of entities, where the key is the
 * `type`: the entity type
 * `authority_hints`: a list of authority hints for the entity
 * `trust_anchors`: a list of trust anchors for the entity
-* `trust_marks` (optional): a dictionary of trust marks for the entity, where the key is the trust mark issuer (its name) and the value is the trust mark (URL).
 
 To configure the test environment, you must run the `configure.sh` script, which will copy the content of `example-conf` to a new folder `conf` and create additional configuration files for each entity, based on the `entities.json` file (such as `authority_hints.json` and `trust_anchors.json`). The script will also create a `caddy` directory, which contains the configuration files for the Caddy web server.
 
@@ -94,7 +93,7 @@ All the entities will expose the `/.well-known/openid-federation` endpoint, acco
 You can also display the payload of an entity that has the provided entity id (given by its URL) as follows:
 
 ```bash
-docker-compose run display https://swamid.localhost
+docker-compose run display https://seid.localhost
 ```
 
 If the entity is an intermediate or trust anchor, that is has subordinates, it will also list the subordinates.

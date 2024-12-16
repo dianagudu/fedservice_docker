@@ -15,7 +15,6 @@ cp /app/utils.py .
 cp -ar /conf/* .
 yq -o json -P '. *= load("conf.json")' default.json > merged_conf.json
 mkdir -p log
-# cp entity.py /app
-cd /app || exit 1
+cp /app/entity.py "/app/${ENTITY_TYPE}/entity.py"
 
-exec python3 /app/entity.py "${ENTITY_TYPE}" "merged_conf.json" "${ENTITY_NAME}"
+exec python3 "/app/${ENTITY_TYPE}/entity.py" "${ENTITY_TYPE}" "merged_conf.json"

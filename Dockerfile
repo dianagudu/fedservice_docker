@@ -14,10 +14,10 @@ WORKDIR /lib/deps
 
 # Install any needed packages
 RUN pip install --upgrade pip && \
-    pip install idpyoidc && \
     pip install flask werkzeug && \
     pip install ofcli && \
-    pip install ./fedservice
+    pip install ./fedservice && \
+    pip install ./idpy-oidc
 
 COPY app /app
 RUN mkdir /log

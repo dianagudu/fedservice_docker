@@ -16,12 +16,12 @@ from idpyoidc.server.exception import UnknownClient
 
 logger = logging.getLogger(__name__)
 
-entity = Blueprint("entity", __name__, url_prefix="")
+entity = Blueprint('entity', __name__, url_prefix='')
 
 
 def _add_cookie(resp, cookie_spec):
-    kwargs = {"value": cookie_spec["value"]}
-    for param in ["expires", "max-age"]:
+    kwargs = {'value': cookie_spec["value"]}
+    for param in ['expires', 'max-age']:
         if param in cookie_spec:
             kwargs[param] = cookie_spec[param]
     kwargs["path"] = "/"
@@ -36,38 +36,38 @@ def add_cookie(resp, cookie_spec):
         _add_cookie(resp, cookie_spec)
 
 
-def do_response(endpoint, req_args, error="", **args):
+def do_response(endpoint, req_args, error='', **args):
     info = endpoint.do_response(request=req_args, error=error, **args)
     _log = current_app.logger
-    _log.debug("do_response: {}".format(info))
+    _log.debug('do_response: {}'.format(info))
 
     try:
-        _response_placement = info["response_placement"]
+        _response_placement = info['response_placement']
     except KeyError:
         _response_placement = endpoint.response_placement
 
-    _log.debug("response_placement: {}".format(_response_placement))
+    _log.debug('response_placement: {}'.format(_response_placement))
 
     if error:
-        if _response_placement == "body":
-            _log.info("Error Response: {}".format(info["response"]))
-            resp = make_response(info["response"], 400)
+        if _response_placement == 'body':
+            _log.info('Error Response: {}'.format(info['response']))
+            resp = make_response(info['response'], 400)
         else:  # _response_placement == 'url':
-            _log.info("Redirect to: {}".format(info["response"]))
-            resp = redirect(info["response"])
+            _log.info('Redirect to: {}'.format(info['response']))
+            resp = redirect(info['response'])
     else:
-        if _response_placement == "body":
-            _log.info("Response: {}".format(info["response"]))
-            resp = make_response(info["response"], 200)
+        if _response_placement == 'body':
+            _log.info('Response: {}'.format(info['response']))
+            resp = make_response(info['response'], 200)
         else:  # _response_placement == 'url':
-            _log.info("Redirect to: {}".format(info["response"]))
-            resp = redirect(info["response"])
+            _log.info('Redirect to: {}'.format(info['response']))
+            resp = redirect(info['response'])
 
-    for key, value in info["http_headers"]:
+    for key, value in info['http_headers']:
         resp.headers[key] = value
 
-    if "cookie" in info:
-        add_cookie(resp, info["cookie"])
+    if 'cookie' in info:
+        add_cookie(resp, info['cookie'])
 
     return resp
 
@@ -76,7 +76,7 @@ def service_endpoint(endpoint):
     _log = current_app.logger
     _log.info('At the "{}" endpoint'.format(endpoint.name))
 
-    if request.method == "GET":
+    if request.method == 'GET':
         if request.args:
             _req_args = request.args.to_dict()
         else:
@@ -85,18 +85,16 @@ def service_endpoint(endpoint):
             req_args = endpoint.parse_request(_req_args)
         except (InvalidClient, UnknownClient) as err:
             _log.error(err)
-            return make_response(
-                json.dumps(
-                    {"error": "unauthorized_client", "error_description": str(err)}
-                ),
-                400,
-            )
+            return make_response(json.dumps({
+                'error': 'unauthorized_client',
+                'error_description': str(err)
+            }), 400)
         except Exception as err:
             _log.error(err)
-            return make_response(
-                json.dumps({"error": "invalid_request", "error_description": str(err)}),
-                400,
-            )
+            return make_response(json.dumps({
+                'error': 'invalid_request',
+                'error_description': str(err)
+            }), 400)
     else:
         if request.data:
             if isinstance(request.data, str):
@@ -109,13 +107,11 @@ def service_endpoint(endpoint):
             req_args = endpoint.parse_request(req_args)
         except Exception as err:
             _log.error(err)
-            err_msg = ResponseMessage(
-                error="invalid_request", error_description=str(err)
-            )
+            err_msg = ResponseMessage(error='invalid_request', error_description=str(err))
             return make_response(err_msg.to_json(), 400)
 
-    _log.info("request: {}".format(req_args))
-    if isinstance(req_args, ResponseMessage) and "error" in req_args:
+    _log.info('request: {}'.format(req_args))
+    if isinstance(req_args, ResponseMessage) and 'error' in req_args:
         return make_response(req_args.to_json(), 400)
 
     try:
@@ -123,56 +119,63 @@ def service_endpoint(endpoint):
     except Exception as err:
         message = traceback.format_exception(*sys.exc_info())
         _log.error(message)
-        err_msg = ResponseMessage(error="invalid_request", error_description=str(err))
+        err_msg = ResponseMessage(error='invalid_request', error_description=str(err))
         return make_response(err_msg.to_json(), 400)
 
-    _log.info("Response args: {}".format(args))
+    _log.info('Response args: {}'.format(args))
 
-    if "redirect_location" in args:
-        return redirect(args["redirect_location"])
-    if "http_response" in args:
-        return make_response(args["http_response"], 200)
+    if 'redirect_location' in args:
+        return redirect(args['redirect_location'])
+    if 'http_response' in args:
+        return make_response(args['http_response'], 200)
 
     response = do_response(endpoint, req_args, **args)
     return response
 
 
-@entity.route("/static/<path:path>")
+@entity.route('/static/<path:path>')
 def send_js(path):
-    return send_from_directory("static", path)
+    return send_from_directory('static', path)
 
 
-@entity.route("/fetch")
+@entity.route('/fetch')
 def fetch():
-    _endpoint = current_app.federation_entity.get_endpoint("fetch")
+    _endpoint = current_app.federation_entity.get_endpoint('fetch')
     return service_endpoint(_endpoint)
 
 
-@entity.route("/list")
+@entity.route('/list')
 def list():
-    _endpoint = current_app.federation_entity.get_endpoint("list")
+    _endpoint = current_app.federation_entity.get_endpoint('list')
     return service_endpoint(_endpoint)
 
+
+@entity.route('/resolve')
+def resolve():
+    _endpoint = current_app.federation_entity.get_endpoint('resolve')
+    return service_endpoint(_endpoint)
+
+
+@entity.route('/pid_query')
+def pid_query():
+    _endpoint = current_app.federation_entity.get_endpoint('pid_query')
+    return service_endpoint(_endpoint)
 
 @entity.errorhandler(werkzeug.exceptions.BadRequest)
 def handle_bad_request(e):
-    return "bad request!", 400
+    return 'bad request!', 400
 
 
-@entity.route("/.well-known/openid-federation")
+@entity.route('/.well-known/openid-federation')
 def wkof():
     _fe = current_app.federation_entity
     metadata = _fe.get_metadata()
     _ctx = _fe.context
     iss = sub = _ctx.entity_id
     _statement = _ctx.create_entity_statement(
-        metadata=metadata,
-        iss=iss,
-        sub=sub,
-        authority_hints=_fe.get_authority_hints(),
-        lifetime=_ctx.default_lifetime,
-    )
+        metadata=metadata, iss=iss, sub=sub, authority_hints=_fe.get_authority_hints(),
+        lifetime=_ctx.default_lifetime)
 
     response = make_response(_statement)
-    response.headers["Content-Type"] = "application/jose; charset=UTF-8"
+    response.headers['Content-Type'] = 'application/jose; charset=UTF-8'
     return response

@@ -29,14 +29,6 @@
         "value_conv": "idpyoidc.util.JSON"
       }
     },
-    "trust_mark_issuers": {
-      "class": "idpyoidc.storage.abfile.AbstractFileSystem",
-      "kwargs": {
-        "fdir": "trust_mark_issuers",
-        "key_conv": "idpyoidc.util.Base64",
-        "value_conv": "idpyoidc.util.JSON"
-      }
-    },
     "endpoints": [
       "entity_configuration",
       "fetch",

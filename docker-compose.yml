@@ -21,10 +21,7 @@ services:
       - caddy
     profiles: [ 'cmd' ]
   ofcli:
-    image: ddgu/fedservice
-    entrypoint:
-      - "bash"
-      - "/app/ofcli.sh"
+    image: ddgu/ofcli
     volumes:
       - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
     networks:
@@ -36,6 +33,9 @@ services:
     hostname: lu
     networks:
       - caddy
+    depends_on:
+      caddy:
+        condition: service_healthy
     environment:
       - ENTITY_TYPE=intermediate
       - ENTITY_NAME=lu
@@ -50,6 +50,9 @@ services:
     hostname: umu
     networks:
       - caddy
+    depends_on:
+      caddy:
+        condition: service_healthy
     environment:
       - ENTITY_TYPE=intermediate
       - ENTITY_NAME=umu
@@ -58,26 +61,32 @@ services:
     volumes:
       - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
       - ./conf/intermediate/umu:/conf
-  swamid:
-    image: ddgu/fedservice
-    init: true
-    hostname: swamid
-    networks:
-      - caddy
-    environment:
-      - ENTITY_TYPE=ta
-      - ENTITY_NAME=swamid
-    ports:
-      - 7002:80
-    volumes:
-      - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
-      - ./conf/ta/swamid:/conf
+  # swamid:
+  #   image: ddgu/fedservice
+  #   init: true
+  #   hostname: swamid
+  #   networks:
+  #     - caddy
+  #   depends_on:
+  #     caddy:
+  #       condition: service_healthy
+  #   environment:
+  #     - ENTITY_TYPE=ta
+  #     - ENTITY_NAME=swamid
+  #   ports:
+  #     - 7002:80
+  #   volumes:
+  #     - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
+  #     - ./conf/ta/swamid:/conf
   seid:
     image: ddgu/fedservice
     init: true
     hostname: seid
     networks:
       - caddy
+    depends_on:
+      caddy:
+        condition: service_healthy
     environment:
       - ENTITY_TYPE=ta
       - ENTITY_NAME=seid
@@ -92,6 +101,9 @@ services:
     hostname: auto
     networks:
       - caddy
+    depends_on:
+      caddy:
+        condition: service_healthy
     environment:
       - ENTITY_TYPE=rp
       - ENTITY_NAME=auto
@@ -106,6 +118,9 @@ services:
     hostname: expl
     networks:
       - caddy
+    depends_on:
+      caddy:
+        condition: service_healthy
     environment:
       - ENTITY_TYPE=rp
       - ENTITY_NAME=expl
@@ -120,6 +135,9 @@ services:
     hostname: op
     networks:
       - caddy
+    depends_on:
+      caddy:
+        condition: service_healthy
     environment:
       - ENTITY_TYPE=op
       - ENTITY_NAME=op
@@ -128,20 +146,6 @@ services:
     volumes:
       - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
       - ./conf/op/op:/conf
-  # tm-personalized:
-  #   image: ddgu/fedservice
-  #   init: true
-  #   hostname: tm-personalized
-  #   networks:
-  #     - caddy
-  #   environment:
-  #     - ENTITY_TYPE=intermediate
-  #     - ENTITY_NAME=tm-personalized
-  #   ports:
-  #     - 6009:80
-  #   volumes:
-  #     - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
-  #     - ./conf/tmi/tm-personalized:/conf
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
@@ -153,6 +157,12 @@ services:
       - ./caddy/data:/data
       - ./caddy/config:/config
     user: ${UID}:${GID}
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f /data/caddy/pki/authorities/local/root.crt ]"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
     networks:
       caddy:
         aliases:
@@ -162,8 +172,6 @@ services:
           - lu.localhost
           - umu.localhost
           - seid.localhost
-          - swamid.localhost
-          # - tm-personalized.localhost
 
 networks:
   caddy:

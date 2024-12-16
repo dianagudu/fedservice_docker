@@ -12,6 +12,7 @@ from flask import render_template
 from flask import request
 from flask.helpers import make_response
 from flask.helpers import send_from_directory
+from idpyoidc.message import Message
 from idpyoidc.message.oauth2 import ResponseMessage
 from idpyoidc.message.oidc import AccessTokenRequest
 from idpyoidc.message.oidc import AuthorizationRequest
@@ -48,10 +49,14 @@ def send_js(path):
     return send_from_directory('static', path)
 
 
-@entity.route('/keys/<jwks>')
-def keys(jwks):
-    fname = os.path.join('static', jwks)
-    return open(fname).read()
+@entity.route('/jwks/<use>')
+def keys(use):
+    for typ in ["openid_provider", "federation_entity"]:
+        if use == typ:
+            _ent_type = current_app.server[typ]
+            return _ent_type.context.keyjar.export_jwks_as_json()
+
+    return "Asking for something I do not have", 400
 
 
 @entity.route('/')
@@ -78,7 +83,10 @@ def do_response(endpoint, req_args, error='', **args):
     if error:
         if _response_placement == 'body':
             _log.info('Error Response: {}'.format(info['response']))
-            resp = make_response(info['response'], 400)
+            _resp = info["response"]
+            if isinstance(_resp, Message):
+                _resp = _resp.to_dict()
+            resp = make_response(_resp, 400)
         else:  # _response_placement == 'url':
             _log.info('Redirect to: {}'.format(info['response']))
             resp = redirect(info['response'])
@@ -117,7 +125,7 @@ def verify(authn_method):
     auth_args = authn_method.unpack_token(kwargs['token'])
     authz_request = AuthorizationRequest().from_urlencoded(auth_args['query'])
 
-    endpoint = current_app.federation_entity.get_endpoint('authorization')
+    endpoint = current_app.server["openid_provider"].get_endpoint('authorization')
     _session_id = endpoint.create_session(authz_request, username, auth_args['authn_class_ref'],
                                           auth_args['iat'], authn_method)
 
@@ -131,7 +139,7 @@ def verify(authn_method):
 
 @entity.route('/verify/user', methods=['GET', 'POST'])
 def verify_user():
-    authn_method = current_app.federation_entity.context.authn_broker.get_method_by_id('user')
+    authn_method = current_app.server["openid_provider"].context.authn_broker.get_method_by_id('user')
     try:
         return verify(authn_method)
     except FailedAuthentication as exc:
@@ -140,7 +148,7 @@ def verify_user():
 
 @entity.route('/verify/user_pass_jinja', methods=['GET', 'POST'])
 def verify_user_pass_jinja():
-    authn_method = current_app.federation_entity.context.authn_broker.get_method_by_id('user')
+    authn_method = current_app.server["openid_provider"].context.authn_broker.get_method_by_id('user')
     try:
         return verify(authn_method)
     except FailedAuthentication as exc:
@@ -149,52 +157,52 @@ def verify_user_pass_jinja():
 
 @entity.route('/.well-known/<service>')
 def well_known(service):
-    # if service == 'openid-configuration':
-    #     _endpoint = current_app.federation_entity.get_endpoint('provider_config')
     if service == 'openid-federation':
-        _endpoint = current_app.federation_entity.get_endpoint('entity_configuration')
+        _endpoint = current_app.server["federation_entity"].get_endpoint('entity_configuration')
     elif service == 'webfinger':
-        _endpoint = current_app.federation_entity.get_endpoint('discovery')
+        _endpoint = current_app.server["openid_provider"].get_endpoint('discovery')
     else:
         return make_response('Not supported', 400)
-
-    return service_endpoint(_endpoint)
+    if _endpoint:
+        return service_endpoint(_endpoint)
+    else:
+        return f'Unsupported service: {service}', 400
 
 
 @entity.route('/registration', methods=['GET', 'POST'])
 def registration():
     return service_endpoint(
-        current_app.federation_entity.get_endpoint('registration'))
+        current_app.server["openid_provider"].get_endpoint('registration'))
 
 
 @entity.route('/registration_api', methods=['GET'])
 def registration_api():
     return service_endpoint(
-        current_app.federation_entity.get_endpoint('registration_read'))
+        current_app.server["openid_provider"].get_endpoint('registration_read'))
 
 
 @entity.route('/authorization')
 def authorization():
     return service_endpoint(
-        current_app.federation_entity.get_endpoint('authorization'))
+        current_app.server["openid_provider"].get_endpoint('authorization'))
 
 
 @entity.route('/token', methods=['GET', 'POST'])
 def token():
     return service_endpoint(
-        current_app.federation_entity.get_endpoint('token'))
+        current_app.server["openid_provider"].get_endpoint('token'))
 
 
 @entity.route('/userinfo', methods=['GET', 'POST'])
 def userinfo():
     return service_endpoint(
-        current_app.federation_entity.get_endpoint('userinfo'))
+        current_app.server["openid_provider"].get_endpoint('userinfo'))
 
 
 @entity.route('/session', methods=['GET'])
 def session_endpoint():
     return service_endpoint(
-        current_app.federation_entity.get_endpoint('session'))
+        current_app.server["openid_provider"].get_endpoint('session'))
 
 
 IGNORE = ["cookie", "user-agent"]
@@ -284,7 +292,7 @@ def check_session_iframe():
             req_args = dict([(k, v) for k, v in request.form.items()])
 
     if req_args:
-        _context = current_app.federation_entity.context
+        _context = current_app.server["openid_provider"].context
         # will contain client_id and origin
         if req_args['origin'] != _context.issuer:
             return 'error'
@@ -300,7 +308,7 @@ def check_session_iframe():
 
 @entity.route('/verify_logout', methods=['GET', 'POST'])
 def verify_logout():
-    part = urlparse(current_app.federation_entity.context.issuer)
+    part = urlparse(current_app.server["openid_provider"].context.issuer)
     page = render_template('logout.html', op=part.hostname,
                            do_logout='rp_logout', sjwt=request.args['sjwt'])
     return page
@@ -308,7 +316,7 @@ def verify_logout():
 
 @entity.route('/rp_logout', methods=['GET', 'POST'])
 def rp_logout():
-    _endp = current_app.federation_entity.get_endpoint('session')
+    _endp = current_app.server["openid_provider"].get_endpoint('session')
     _info = _endp.unpack_signed_jwt(request.form['sjwt'])
     try:
         request.form['logout']
