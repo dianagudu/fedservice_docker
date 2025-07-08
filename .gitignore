@@ -1,12 +1,10 @@
 *.pyc
 *.egg-info
 */.eggs
+__pycache__
 build/
 .env
-conf/*/*/fed_keys.json
-conf/*/*/static/
-conf/*/*/private/
-conf/*/*/subordinates/
-conf/*/*/trusted_roots.json
-traefik/certs/*
 *.crt
+deps
+conf
+caddy

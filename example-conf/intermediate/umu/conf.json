@@ -1,0 +1,57 @@
+{
+  "entity": {
+    "entity_id": "https://umu.localhost",
+    "preference": {
+      "organization_name": "UMU",
+      "homepage_uri": "https://umu.localhost",
+      "contacts": "operations@umu.localhost"
+    },
+    "key_config": {
+      "private_path": "private/fed_keys.json",
+      "key_defs": [
+        {
+          "type": "RSA",
+          "use": [
+            "sig"
+          ]
+        },
+        {
+          "type": "EC",
+          "crv": "P-256",
+          "use": [
+            "sig"
+          ]
+        }
+      ],
+      "public_path": "static/fed_keys.json",
+      "read_only": false
+    },
+    "authority_hints": {
+      "class": "idpyoidc.storage.listfile.ReadOnlyListFile",
+      "kwargs": {
+        "file_name": "authority_hints"
+      }
+    },
+    "trust_anchors": {
+      "class": "idpyoidc.storage.abfile.AbstractFileSystem",
+      "kwargs": {
+        "fdir": "trust_anchors",
+        "key_conv": "idpyoidc.util.Base64",
+        "value_conv": "idpyoidc.util.JSON"
+      }
+    },
+    "subordinate": {
+      "class": "idpyoidc.storage.abfile.AbstractFileSystem",
+      "kwargs": {
+        "fdir": "subordinates",
+        "key_conv": "idpyoidc.util.Base64",
+        "value_conv": "idpyoidc.util.JSON"
+      }
+    },
+    "endpoints": [
+      "entity_configuration",
+      "fetch",
+      "list"
+    ]
+  }
+}

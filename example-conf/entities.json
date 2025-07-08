@@ -1,0 +1,52 @@
+{
+  "op": {
+    "type": "op",
+    "authority_hints": [
+      "umu"
+    ],
+    "trust_anchors": [
+      "seid"
+    ]
+  },
+  "auto": {
+    "type": "rp",
+    "authority_hints": [
+      "lu"
+    ],
+    "trust_anchors": [
+      "seid"
+    ]
+  },
+  "expl": {
+    "type": "rp",
+    "authority_hints": [
+      "lu"
+    ],
+    "trust_anchors": [
+      "seid"
+    ]
+  },
+  "lu": {
+    "type": "intermediate",
+    "authority_hints": [
+      "seid"
+    ],
+    "trust_anchors": [
+      "seid"
+    ]
+  },
+  "umu": {
+    "type": "intermediate",
+    "authority_hints": [
+      "seid"
+    ],
+    "trust_anchors": [
+      "seid"
+    ]
+  },
+  "seid": {
+    "type": "ta",
+    "authority_hints": [],
+    "trust_anchors": []
+  }
+}

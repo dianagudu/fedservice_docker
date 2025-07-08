@@ -1,0 +1,141 @@
+{
+  "entity": {
+    "entity_id": "https://auto.localhost",
+    "key_config": {
+      "private_path": "private/fed_keys.json",
+      "key_defs": [
+        {
+          "type": "RSA",
+          "key": "",
+          "use": [
+            "sig"
+          ]
+        },
+        {
+          "type": "EC",
+          "crv": "P-256",
+          "use": [
+            "sig"
+          ]
+        }
+      ],
+      "public_path": "static/fed_keys.json",
+      "read_only": false,
+      "uri_path": "jwks/federation_entity"
+    },
+    "httpc_params": {
+      "verify": false
+    },
+    "authority_hints": {
+      "class": "idpyoidc.storage.listfile.ReadOnlyListFile",
+      "kwargs": {
+        "file_name": "authority_hints"
+      }
+    },
+    "trust_anchors": {
+      "class": "idpyoidc.storage.abfile_no_cache.AbstractFileSystemNoCache",
+      "kwargs": {
+        "fdir": "trust_anchors",
+        "key_conv": "idpyoidc.util.Base64",
+        "value_conv": "idpyoidc.util.JSON"
+      }
+    },
+    "endpoints": [
+      "entity_configuration"
+    ],
+    "services": [
+      "entity_configuration",
+      "entity_statement",
+      "oauth_registration",
+      "list"
+    ],
+    "entity_type": {
+      "openid_relying_party": {
+        "class": "idpyoidc.client.rp_handler.RPHandler",
+        "kwargs": {
+          "config": {
+            "client_class": "fedservice.appclient.stand_alone_client_entity.StandAloneClientEntity",
+            "base_url": "https://auto.localhost",
+            "entity_id": "https://auto.localhost",
+            "client_type": "oidc",
+            "entity_type": "openid_relying_party",
+            "key_conf": {
+              "private_path": "private/jwks.json",
+              "key_defs": [
+                {
+                  "type": "RSA",
+                  "key": "",
+                  "use": [
+                    "sig"
+                  ]
+                },
+                {
+                  "type": "EC",
+                  "crv": "P-256",
+                  "use": [
+                    "sig"
+                  ]
+                }
+              ],
+              "public_path": "static/jwks.json",
+              "read_only": false,
+              "uri_path": "static/jwks.json"
+            },
+            "preference": {
+              "application_name": "rphandler",
+              "application_type": "web",
+              "contacts": [
+                "ops@example.com"
+              ],
+              "response_types_supported": [
+                "code",
+                "code id_token",
+                "id_token"
+              ],
+              "scope": [
+                "openid",
+                "profile",
+                "email",
+                "address",
+                "phone",
+                "eduperson_assurance"
+              ],
+              "token_endpoint_auth_method": [
+                "private_key_jwt"
+              ]
+            },
+            "services": {
+              "registration": {
+                "class": "fedservice.appclient.oidc.registration.Registration",
+                "kwargs": {}
+              },
+              "authorization": {
+                "class": "idpyoidc.client.oidc.authorization.Authorization",
+                "kwargs": {}
+              },
+              "accesstoken": {
+                "class": "idpyoidc.client.oidc.access_token.AccessToken",
+                "kwargs": {}
+              },
+              "userinfo": {
+                "class": "idpyoidc.client.oidc.userinfo.UserInfo",
+                "kwargs": {}
+              }
+            },
+            "clients": {
+              "": {
+                "redirect_uris": null,
+                "local": {
+                  "issuer": "http://op",
+                  "redirect_uris": [
+                    "http://auto/authz_cb/local"
+                  ]  
+                }
+              }
+            }  
+          }
+        }
+      }
+    }
+  }
+}

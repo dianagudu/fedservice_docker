@@ -1,7 +1,6 @@
 #!/bin/bash
 
-update-ca-certificates
-cat /etc/ssl/certs/ca-certificates.crt >> `python -m certifi`
+/app/update_certs.sh
 
 [[ -f "/conf/.env" ]] && source "/conf/.env"
 
@@ -12,18 +11,10 @@ cat /etc/ssl/certs/ca-certificates.crt >> `python -m certifi`
 
 cd "/app/${ENTITY_TYPE}" || exit 1
 
+cp /app/utils.py .
 cp -ar /conf/* .
-# link to subordinates folder if it exists, instead of copying
-[[ -d "/conf/subordinates" ]] && (
-    rm -rf ./subordinates
-    ln -s /conf/subordinates ./subordinates
-)
-
-[[ ! -f "./conf.json" ]] && (
-    echo "ERROR: Config file not found"
-    exit 1
-)
-
 yq -o json -P '. *= load("conf.json")' default.json > merged_conf.json
+mkdir -p log
+cp /app/entity.py "/app/${ENTITY_TYPE}/entity.py"
 
-exec python3 entity.py "${ENTITY_NAME}" "merged_conf.json"
+exec python3 "/app/${ENTITY_TYPE}/entity.py" "${ENTITY_TYPE}" "merged_conf.json"

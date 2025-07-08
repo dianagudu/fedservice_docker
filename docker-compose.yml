@@ -1,212 +1,178 @@
-version: '3.9'
-
 services:
   setup:
     image: ddgu/fedservice
-    command: "/app/setup.sh"
+    entrypoint:
+      - "python3"
+      - "/app/setup.py"
+      - "/conf"
     user: ${UID}:${GID}
     volumes:
+      - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
       - ./conf:/conf
     profiles: [ 'setup' ]
   display:
     image: ddgu/fedservice
     entrypoint:
-      - "python3"
-      - "/app/display_entity.py"
+      - "bash"
+      - "/app/display.sh"
+    volumes:
+      - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
     networks:
-      - traefik
+      - caddy
+    profiles: [ 'cmd' ]
+  ofcli:
+    image: ddgu/ofcli
+    volumes:
+      - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
+    networks:
+      - caddy
     profiles: [ 'cmd' ]
   lu:
     image: ddgu/fedservice
     init: true
-    hostname: lu.fed2
+    hostname: lu
     networks:
-      - default
-      - traefik
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=traefik
-      - traefik.http.routers.fedservice-lu-http.rule=Host("lu.fedservice.lh")
-      - traefik.http.routers.fedservice-lu-http.entrypoints=http
-      - traefik.http.routers.fedservice-lu-http.middlewares=https-redirect
-      - traefik.http.routers.fedservice-lu-https.rule=Host("lu.fedservice.lh")
-      - traefik.http.routers.fedservice-lu-https.entrypoints=https
-      - traefik.http.routers.fedservice-lu-https.tls=true
-      - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
-      - traefik.http.services.fedservice-lu.loadbalancer.server.port=11833
+      - caddy
+    depends_on:
+      caddy:
+        condition: service_healthy
     environment:
       - ENTITY_TYPE=intermediate
-      - ENTITY_NAME=LU
+      - ENTITY_NAME=lu
     ports:
-      - 6001:11833
+      - 6001:80
     volumes:
-      - ./mkcertRootCA.crt:/usr/local/share/ca-certificates/mkcertRootCA.crt:ro
+      - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
       - ./conf/intermediate/lu:/conf
   umu:
     image: ddgu/fedservice
     init: true
-    hostname: umu.fed2
+    hostname: umu
     networks:
-      - default
-      - traefik
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=traefik
-      - traefik.http.routers.fedservice-umu-http.rule=Host("umu.fedservice.lh")
-      - traefik.http.routers.fedservice-umu-http.entrypoints=http
-      - traefik.http.routers.fedservice-umu-http.middlewares=https-redirect
-      - traefik.http.routers.fedservice-umu-https.rule=Host("umu.fedservice.lh")
-      - traefik.http.routers.fedservice-umu-https.entrypoints=https
-      - traefik.http.routers.fedservice-umu-https.tls=true
-      - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
-      - traefik.http.services.fedservice-umu.loadbalancer.server.port=11833
+      - caddy
+    depends_on:
+      caddy:
+        condition: service_healthy
     environment:
       - ENTITY_TYPE=intermediate
-      - ENTITY_NAME=UMU
+      - ENTITY_NAME=umu
     ports:
-      - 6002:11833
+      - 6002:80
     volumes:
-      - ./mkcertRootCA.crt:/usr/local/share/ca-certificates/mkcertRootCA.crt:ro
+      - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
       - ./conf/intermediate/umu:/conf
-  swamid:
-    image: ddgu/fedservice
-    init: true
-    hostname: swamid.fed2
-    networks:
-      - default
-      - traefik
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=traefik
-      - traefik.http.routers.fedservice-swamid-http.rule=Host("swamid.fedservice.lh")
-      - traefik.http.routers.fedservice-swamid-http.entrypoints=http
-      - traefik.http.routers.fedservice-swamid-http.middlewares=https-redirect
-      - traefik.http.routers.fedservice-swamid-https.rule=Host("swamid.fedservice.lh")
-      - traefik.http.routers.fedservice-swamid-https.entrypoints=https
-      - traefik.http.routers.fedservice-swamid-https.tls=true
-      - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
-      - traefik.http.services.fedservice-swamid.loadbalancer.server.port=11833
-    environment:
-      - ENTITY_TYPE=ta
-      - ENTITY_NAME=SWAMID
-    ports:
-      - 7002:11833
-    volumes:
-      - ./mkcertRootCA.crt:/usr/local/share/ca-certificates/mkcertRootCA.crt:ro
-      - ./conf/ta/swamid:/conf
+  # swamid:
+  #   image: ddgu/fedservice
+  #   init: true
+  #   hostname: swamid
+  #   networks:
+  #     - caddy
+  #   depends_on:
+  #     caddy:
+  #       condition: service_healthy
+  #   environment:
+  #     - ENTITY_TYPE=ta
+  #     - ENTITY_NAME=swamid
+  #   ports:
+  #     - 7002:80
+  #   volumes:
+  #     - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
+  #     - ./conf/ta/swamid:/conf
   seid:
     image: ddgu/fedservice
     init: true
-    hostname: seid.fed2
+    hostname: seid
     networks:
-      - default
-      - traefik
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=traefik
-      - traefik.http.routers.fedservice-seid-http.rule=Host("seid.fedservice.lh")
-      - traefik.http.routers.fedservice-seid-http.entrypoints=http
-      - traefik.http.routers.fedservice-seid-http.middlewares=https-redirect
-      - traefik.http.routers.fedservice-seid-https.rule=Host("seid.fedservice.lh")
-      - traefik.http.routers.fedservice-seid-https.entrypoints=https
-      - traefik.http.routers.fedservice-seid-https.tls=true
-      - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
-      - traefik.http.services.fedservice-seid.loadbalancer.server.port=11833
+      - caddy
+    depends_on:
+      caddy:
+        condition: service_healthy
     environment:
       - ENTITY_TYPE=ta
-      - ENTITY_NAME=SEID
+      - ENTITY_NAME=seid
     ports:
-      - 7001:11833
+      - 7001:80
     volumes:
-      - ./mkcertRootCA.crt:/usr/local/share/ca-certificates/mkcertRootCA.crt:ro
+      - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
       - ./conf/ta/seid:/conf
   auto:
     image: ddgu/fedservice
     init: true
-    hostname: auto.fed2
+    hostname: auto
     networks:
-      - default
-      - traefik
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=traefik
-      - traefik.http.routers.fedservice-auto-http.rule=Host("auto.fedservice.lh")
-      - traefik.http.routers.fedservice-auto-http.entrypoints=http
-      - traefik.http.routers.fedservice-auto-http.middlewares=https-redirect
-      - traefik.http.routers.fedservice-auto-https.rule=Host("auto.fedservice.lh")
-      - traefik.http.routers.fedservice-auto-https.entrypoints=https
-      - traefik.http.routers.fedservice-auto-https.tls=true
-      - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
-      - traefik.http.services.fedservice-auto.loadbalancer.server.port=11833
+      - caddy
+    depends_on:
+      caddy:
+        condition: service_healthy
     environment:
       - ENTITY_TYPE=rp
-      - ENTITY_NAME=AUTO
+      - ENTITY_NAME=auto
     ports:
-      - 4002:11833
+      - 4002:80
     volumes:
-      - ./mkcertRootCA.crt:/usr/local/share/ca-certificates/mkcertRootCA.crt:ro
+      - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
       - ./conf/rp/auto:/conf
   expl:
     image: ddgu/fedservice
     init: true
-    hostname: expl.fed2
+    hostname: expl
     networks:
-      - default
-      - traefik
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=traefik
-      - traefik.http.routers.fedservice-expl-http.rule=Host("expl.fedservice.lh")
-      - traefik.http.routers.fedservice-expl-http.entrypoints=http
-      - traefik.http.routers.fedservice-expl-http.middlewares=https-redirect
-      - traefik.http.routers.fedservice-expl-https.rule=Host("expl.fedservice.lh")
-      - traefik.http.routers.fedservice-expl-https.entrypoints=https
-      - traefik.http.routers.fedservice-expl-https.tls=true
-      - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
-      - traefik.http.services.fedservice-expl.loadbalancer.server.port=11833
+      - caddy
+    depends_on:
+      caddy:
+        condition: service_healthy
     environment:
       - ENTITY_TYPE=rp
-      - ENTITY_NAME=EXPL
+      - ENTITY_NAME=expl
     ports:
-      - 4001:11833
+      - 4001:80
     volumes:
-      - ./mkcertRootCA.crt:/usr/local/share/ca-certificates/mkcertRootCA.crt:ro
+      - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
       - ./conf/rp/expl:/conf
   op:
     image: ddgu/fedservice
     init: true
-    hostname: op.fed2
+    hostname: op
     networks:
-      - default
-      - traefik
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=traefik
-      - traefik.http.routers.fedservice-op-http.rule=Host("op.fedservice.lh")
-      - traefik.http.routers.fedservice-op-http.entrypoints=http
-      - traefik.http.routers.fedservice-op-http.middlewares=https-redirect
-      - traefik.http.routers.fedservice-op-https.rule=Host("op.fedservice.lh")
-      - traefik.http.routers.fedservice-op-https.entrypoints=https
-      - traefik.http.routers.fedservice-op-https.tls=true
-      - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
-      - traefik.http.services.fedservice-op.loadbalancer.server.port=11833
+      - caddy
+    depends_on:
+      caddy:
+        condition: service_healthy
     environment:
       - ENTITY_TYPE=op
-      - ENTITY_NAME=OP
+      - ENTITY_NAME=op
     ports:
-      - 5000:11833
+      - 5000:80
     volumes:
-      - ./mkcertRootCA.crt:/usr/local/share/ca-certificates/mkcertRootCA.crt:ro
+      - ./caddy/data/caddy/pki/authorities/local/root.crt:/usr/local/share/ca-certificates/caddyRootCA.crt:ro
       - ./conf/op/op:/conf
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ./caddy/data:/data
+      - ./caddy/config:/config
+    user: ${UID}:${GID}
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f /data/caddy/pki/authorities/local/root.crt ]"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    networks:
+      caddy:
+        aliases:
+          - op.localhost
+          - auto.localhost
+          - expl.localhost
+          - lu.localhost
+          - umu.localhost
+          - seid.localhost
 
 networks:
-  default:
-  traefik:
+  caddy:
     external: true

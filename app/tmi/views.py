@@ -78,23 +78,9 @@ def service_endpoint(endpoint):
 
     if request.method == 'GET':
         if request.args:
-            _req_args = request.args.to_dict()
+            req_args = request.args.to_dict()
         else:
-            _req_args = {}
-        try:
-            req_args = endpoint.parse_request(_req_args)
-        except (InvalidClient, UnknownClient) as err:
-            _log.error(err)
-            return make_response(json.dumps({
-                'error': 'unauthorized_client',
-                'error_description': str(err)
-            }), 400)
-        except Exception as err:
-            _log.error(err)
-            return make_response(json.dumps({
-                'error': 'invalid_request',
-                'error_description': str(err)
-            }), 400)
+            req_args = {}
     else:
         if request.data:
             if isinstance(request.data, str):
@@ -103,12 +89,19 @@ def service_endpoint(endpoint):
                 req_args = request.data.decode()
         else:
             req_args = dict([(k, v) for k, v in request.form.items()])
-        try:
-            req_args = endpoint.parse_request(req_args)
-        except Exception as err:
-            _log.error(err)
-            err_msg = ResponseMessage(error='invalid_request', error_description=str(err))
-            return make_response(err_msg.to_json(), 400)
+
+    try:
+        req_args = endpoint.parse_request(req_args)
+    except (InvalidClient, UnknownClient) as err:
+        _log.error(err)
+        return make_response(json.dumps({
+            'error': 'unauthorized_client',
+            'error_description': str(err)
+        }), 400)
+    except Exception as err:
+        _log.error(err)
+        err_msg = ResponseMessage(error='invalid_request', error_description=str(err))
+        return make_response(err_msg.to_json(), 400)
 
     _log.info('request: {}'.format(req_args))
     if isinstance(req_args, ResponseMessage) and 'error' in req_args:
@@ -127,7 +120,9 @@ def service_endpoint(endpoint):
     if 'redirect_location' in args:
         return redirect(args['redirect_location'])
     if 'http_response' in args:
-        return make_response(args['http_response'], 200)
+        resp = make_response(args['http_response'], 200)
+        #resp.headers['content-type'] = endpoint.response_content_type
+        return resp
 
     response = do_response(endpoint, req_args, **args)
     return response
@@ -150,26 +145,33 @@ def list():
     return service_endpoint(_endpoint)
 
 
-@entity.route('/resolve')
-def resolve():
-    _endpoint = current_app.federation_entity.get_endpoint('resolve')
-    return service_endpoint(_endpoint)
-
-
-@entity.route('/pid_query')
-def pid_query():
-    _endpoint = current_app.federation_entity.get_endpoint('pid_query')
-    return service_endpoint(_endpoint)
-
 @entity.errorhandler(werkzeug.exceptions.BadRequest)
 def handle_bad_request(e):
     return 'bad request!', 400
 
 
+@entity.route('/trust_mark')
+def trust_mark():
+    _endpoint = current_app.federation_entity.get_endpoint('trust_mark')
+    return service_endpoint(_endpoint)
+
+
+@entity.route('/trust_mark_status')
+def trust_mark_status():
+    _endpoint = current_app.federation_entity.get_endpoint('trust_mark_status')
+    return service_endpoint(_endpoint)
+
+
+@entity.route('/trust_mark_list')
+def trust_mark_list():
+    _endpoint = current_app.federation_entity.get_endpoint('trust_mark_list')
+    return service_endpoint(_endpoint)
+
 @entity.route('/.well-known/openid-federation')
 def wkof():
+    _entity = current_app.server
+    metadata = _entity.get_metadata()
     _fe = current_app.federation_entity
-    metadata = _fe.get_metadata()
     _ctx = _fe.context
     iss = sub = _ctx.entity_id
     _statement = _ctx.create_entity_statement(

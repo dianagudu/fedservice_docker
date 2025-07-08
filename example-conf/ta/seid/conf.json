@@ -1,0 +1,38 @@
+{
+  "entity": {
+    "entity_id": "https://seid.localhost",
+    "key_config": {
+      "private_path": "private/fed_keys.json",
+      "key_defs": [
+        {
+          "type": "RSA",
+          "use": [
+            "sig"
+          ]
+        },
+        {
+          "type": "EC",
+          "crv": "P-256",
+          "use": [
+            "sig"
+          ]
+        }
+      ],
+      "public_path": "static/fed_keys.json",
+      "read_only": false
+    },
+    "subordinate": {
+      "class": "idpyoidc.storage.abfile.AbstractFileSystem",
+      "kwargs": {
+        "fdir": "subordinates",
+        "key_conv": "idpyoidc.util.Base64",
+        "value_conv": "idpyoidc.util.JSON"
+      }
+    },
+    "endpoints": [
+      "entity_configuration",
+      "fetch",
+      "list"
+    ]
+  }
+}

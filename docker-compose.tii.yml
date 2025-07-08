@@ -22,12 +22,12 @@ services:
         - traefik.http.routers.fedservice-lu-https.tls.certresolver=le
         - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
         - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
-        - traefik.http.services.fedservice-lu.loadbalancer.server.port=11833
+        - traefik.http.services.fedservice-lu.loadbalancer.server.port=80
     environment:
       - ENTITY_TYPE=intermediate
       - ENTITY_NAME=LU
     ports:
-      - 6001:11833
+      - 6001:80
     volumes:
       - ./conf/intermediate/lu:/conf
   umu:
@@ -51,12 +51,12 @@ services:
         - traefik.http.routers.fedservice-umu-https.tls.certresolver=le
         - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
         - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
-        - traefik.http.services.fedservice-umu.loadbalancer.server.port=11833
+        - traefik.http.services.fedservice-umu.loadbalancer.server.port=80
     environment:
       - ENTITY_TYPE=intermediate
       - ENTITY_NAME=UMU
     ports:
-      - 6002:11833
+      - 6002:80
     volumes:
       - ./conf/intermediate/umu:/conf
   swamid:
@@ -80,12 +80,12 @@ services:
         - traefik.http.routers.fedservice-swamid-https.tls.certresolver=le
         - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
         - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
-        - traefik.http.services.fedservice-swamid.loadbalancer.server.port=11833
+        - traefik.http.services.fedservice-swamid.loadbalancer.server.port=80
     environment:
       - ENTITY_TYPE=ta
       - ENTITY_NAME=SWAMID
     ports:
-      - 7002:11833
+      - 7002:80
     volumes:
       - ./conf/ta/swamid:/conf
   seid:
@@ -109,12 +109,12 @@ services:
         - traefik.http.routers.fedservice-seid-https.tls.certresolver=le
         - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
         - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
-        - traefik.http.services.fedservice-seid.loadbalancer.server.port=11833
+        - traefik.http.services.fedservice-seid.loadbalancer.server.port=80
     environment:
       - ENTITY_TYPE=ta
       - ENTITY_NAME=SEID
     ports:
-      - 7001:11833
+      - 7001:80
     volumes:
       - ./conf/ta/seid:/conf
   auto:
@@ -138,12 +138,12 @@ services:
         - traefik.http.routers.fedservice-auto-https.tls.certresolver=le
         - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
         - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
-        - traefik.http.services.fedservice-auto.loadbalancer.server.port=11833
+        - traefik.http.services.fedservice-auto.loadbalancer.server.port=80
     environment:
       - ENTITY_TYPE=rp
       - ENTITY_NAME=AUTO
     ports:
-      - 4002:11833
+      - 4002:80
     volumes:
       - ./conf/rp/auto:/conf
   expl:
@@ -167,12 +167,12 @@ services:
         - traefik.http.routers.fedservice-expl-https.tls.certresolver=le
         - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
         - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
-        - traefik.http.services.fedservice-expl.loadbalancer.server.port=11833
+        - traefik.http.services.fedservice-expl.loadbalancer.server.port=80
     environment:
       - ENTITY_TYPE=rp
       - ENTITY_NAME=EXPL
     ports:
-      - 4001:11833
+      - 4001:80
     volumes:
       - ./conf/rp/expl:/conf
   op:
@@ -196,12 +196,12 @@ services:
         - traefik.http.routers.fedservice-op-https.tls.certresolver=le
         - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
         - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
-        - traefik.http.services.fedservice-op.loadbalancer.server.port=11833
+        - traefik.http.services.fedservice-op.loadbalancer.server.port=80
     environment:
       - ENTITY_TYPE=op
       - ENTITY_NAME=OP
     ports:
-      - 5000:11833
+      - 5000:80
     volumes:
       - ./conf/op/op:/conf
 

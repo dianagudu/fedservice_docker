@@ -3,22 +3,20 @@ import logging
 import sys
 import traceback
 
+import werkzeug
 from flask import Blueprint
 from flask import current_app
 from flask import redirect
 from flask import request
 from flask.helpers import make_response
 from flask.helpers import send_from_directory
-from oidcmsg.oauth2 import ResponseMessage
-from oidcop.exception import InvalidClient
-from oidcop.exception import UnknownClient
-import werkzeug
-
-from fedservice.rp.registration import Registration
+from idpyoidc.message.oauth2 import ResponseMessage
+from idpyoidc.server.exception import InvalidClient
+from idpyoidc.server.exception import UnknownClient
 
 logger = logging.getLogger(__name__)
 
-intermediate = Blueprint("intermediate", __name__, url_prefix="")
+entity = Blueprint("entity", __name__, url_prefix="")
 
 
 def _add_cookie(resp, cookie_spec):
@@ -139,31 +137,31 @@ def service_endpoint(endpoint):
     return response
 
 
-@intermediate.route("/static/<path:path>")
+@entity.route("/static/<path:path>")
 def send_js(path):
     return send_from_directory("static", path)
 
 
-@intermediate.route("/fetch")
+@entity.route("/fetch")
 def fetch():
-    _endpoint = current_app.server.server_get("endpoint", "fetch")
+    _endpoint = current_app.federation_entity.get_endpoint("fetch")
     return service_endpoint(_endpoint)
 
 
-@intermediate.route("/list")
+@entity.route("/list")
 def list():
-    _endpoint = current_app.server.server_get("endpoint", "list")
+    _endpoint = current_app.federation_entity.get_endpoint("list")
     return service_endpoint(_endpoint)
 
 
-@intermediate.errorhandler(werkzeug.exceptions.BadRequest)
+@entity.errorhandler(werkzeug.exceptions.BadRequest)
 def handle_bad_request(e):
     return "bad request!", 400
 
 
-@intermediate.route("/.well-known/openid-federation")
+@entity.route("/.well-known/openid-federation")
 def wkof():
-    _fe = current_app.server
+    _fe = current_app.federation_entity
     metadata = _fe.get_metadata()
     _ctx = _fe.context
     iss = sub = _ctx.entity_id
@@ -171,16 +169,10 @@ def wkof():
         metadata=metadata,
         iss=iss,
         sub=sub,
-        authority_hints=_ctx.authority_hints,
+        authority_hints=_fe.get_authority_hints(),
         lifetime=_ctx.default_lifetime,
     )
 
     response = make_response(_statement)
     response.headers["Content-Type"] = "application/jose; charset=UTF-8"
     return response
-
-
-@intermediate.route("/onboarding", methods=["POST"])
-def onboarding():
-    _endpoint = current_app.server.server_get("endpoint", "onboarding")
-    return service_endpoint(_endpoint)

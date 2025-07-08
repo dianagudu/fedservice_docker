@@ -1,0 +1,42 @@
+op.localhost {
+	reverse_proxy op:80
+}
+www.op.localhost {
+	redir https://op.localhost{uri}
+}
+auto.localhost {
+	reverse_proxy auto:80
+}
+www.auto.localhost {
+	redir https://auto.localhost{uri}
+}
+expl.localhost {
+	reverse_proxy expl:80
+}
+www.expl.localhost {
+	redir https://expl.localhost{uri}
+}
+lu.localhost {
+	reverse_proxy lu:80
+}
+www.lu.localhost {
+	redir https://lu.localhost{uri}
+}
+umu.localhost {
+	reverse_proxy umu:80
+}
+www.umu.localhost {
+	redir https://umu.localhost{uri}
+}
+swamid.localhost {
+	reverse_proxy swamid:80
+}
+www.swamid.localhost {
+	redir https://swamid.localhost{uri}
+}
+seid.localhost {
+	reverse_proxy seid:80
+}
+www.seid.localhost {
+	redir https://seid.localhost{uri}
+}

@@ -1,44 +1,44 @@
 {
-    "federation": {},
-    "logging": {
-        "version": 1,
-        "disable_existing_loggers": false,
-        "root": {
-            "handlers": [
-                "default",
-                "console"
-            ],
-            "level": "DEBUG"
-        },
-        "loggers": {
-            "entity": {
-                "level": "DEBUG"
-            }
-        },
-        "handlers": {
-            "default": {
-                "class": "logging.FileHandler",
-                "filename": "/log/debug.log",
-                "formatter": "default"
-            },
-            "console": {
-                "class": "logging.StreamHandler",
-                "stream": "ext://sys.stdout",
-                "formatter": "default"
-            }
-        },
-        "formatters": {
-            "default": {
-                "format": "%(asctime)s %(name)s %(levelname)s %(message)s"
-            }
-        }
+  "logging": {
+    "version": 1,
+    "disable_existing_loggers": false,
+    "root": {
+      "handlers": [
+        "default",
+        "console"
+      ],
+      "level": "DEBUG"
     },
-    "webserver": {
-        "server_cert": "/certs/example.crt",
-        "server_key": "/certs/example.key",
-        "cert_chain": null,
-        "port": 11833,
-        "domain": "0.0.0.0",
-        "debug": true
+    "loggers": {
+      "entity": {
+        "level": "DEBUG"
+      }
+    },
+    "handlers": {
+      "default": {
+        "class": "logging.FileHandler",
+        "filename": "/log/debug.log",
+        "encoding": "utf8",
+        "formatter": "default",
+        "level": "DEBUG"
+      },
+      "console": {
+        "class": "logging.StreamHandler",
+        "stream": "ext://sys.stdout",
+        "formatter": "default"
+      }
+    },
+    "formatters": {
+      "default": {
+        "format": "[%(asctime)s] [%(levelname)s] [%(name)s.%(funcName)s] %(message)s"
+      }
     }
+  },
+  "entity": {},
+  "webserver": {
+    "cert_chain": null,
+    "port": 80,
+    "domain": "0.0.0.0",
+    "debug": true
+  }
 }
