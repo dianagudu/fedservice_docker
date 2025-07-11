@@ -1,0 +1,6 @@
+rp2.localhost {
+	reverse_proxy rp2:80
+}
+www.rp2.localhost {
+	redir https://rp2.localhost{uri}
+}

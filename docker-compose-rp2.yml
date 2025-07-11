@@ -1,0 +1,16 @@
+services:
+  rp2:
+    image: ddgu/fedservice:2.0.0
+    init: true
+    hostname: rp2
+    networks:
+      - caddy
+    environment:
+      - ENTITY_TYPE=rp
+      - ENTITY_NAME=rp2
+    volumes:
+      - ./conf-rp2/rp/rp2:/conf
+
+networks:
+  caddy:
+    external: true

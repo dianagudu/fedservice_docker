@@ -6,5 +6,5 @@ build/
 .env
 *.crt
 deps
-conf
-caddy
+conf*
+caddy*

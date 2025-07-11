@@ -1,12 +1,13 @@
 # OIDC federation implementation
 
-[Forked from https://github.com/rohe/fedservice]
+[Forked from https://github.com/SUNET/fedservice]
 
 ## Project structure
 
 - [deps/fedservice](deps/fedservice): Python implementation of OIDC federation
 - [app](app): Python (w/ Flask) code to run different federation entities
 - [example-conf](example-conf): configuration folder for example federation setup
+- [example-rp2](example-rp2): example relying party that uses an external federation
 
 ## Federation example
 
@@ -69,13 +70,27 @@ The `entities.json` file contains a dictionary of entities, where the key is the
 * `authority_hints`: a list of authority hints for the entity
 * `trust_anchors`: a list of trust anchors for the entity
 
-To configure the test environment, you must run the `configure.sh` script, which will copy the content of `example-conf` to a new folder `conf` and create additional configuration files for each entity, based on the `entities.json` file (such as `authority_hints.json` and `trust_anchors.json`). The script will also create a `caddy` directory, which contains the configuration files for the Caddy web server.
+To configure the test environment, you must run the `configure.sh` script, which will copy the content of `example-conf` to a new folder `conf` and create additional configuration files for each entity, based on the `entities.json` file (such as `authority_hints.json` and `trust_anchors.json`). The script will also create a `caddy` directory, which contains the configuration files for the Caddy web server. A Caddyfile must be present in the `example-conf` directory, which will be copied to the `caddy` directory.
 
 If you are not running the test environment on your local machine, you must also pass the domain name to the `configure.sh` script, and it will first replace the domain name in the configuration files with the domain name of the machine you are running the test environment on.
 
 ```bash
-    ./configure.sh [<domain>]
+Usage: ./configure.sh [-s src_conf] [-d dest_conf] [-n domain_name] [-c caddy_dir]
+Defaults: src_conf=example-conf, dest_conf=conf, domain_name=localhost, caddy_dir=caddy
 ```
+
+#### Test environment with external entities
+
+If you want to use the test environment with external entities, you can use the `example-rp2` directory, which contains an example relying party that uses an external federation. In this case, only the `rp2` entity (an RP with automatic registration) is configured, and it will use existing trust anchors and authority hints to discover the other entities in the federation. These must be up and running, to be able to retrieve their keys.
+
+You can create the configuration folder for this example with the following command:
+
+```bash
+./configure.sh -s example-rp2 -d conf-rp2 -n oidf-pilot.edugain.org -c caddy-edugain
+```
+
+This will create a new folder `conf-rp2` with the configuration files for the RP, and a new folder `caddy-edugain` with the Caddy configuration files. The domain name `oidf-pilot.edugain.org` will be used in the configuration files. We also provide a docker compose file `docker-compose-rp2.yml` that you can use to run the RP with the external federation.
+
 
 ### Deploy test environment
 
@@ -172,6 +187,8 @@ As an example, to onboard the OP 'https://op.localhost' to the italian federatio
 - onboard the OP to the trust anchor at https://trust-anchor.spid-cie.localhost/onboarding/landing
 
 ## Onboarding a new entity in this federation
+
+[!Note] This section might be outdated.
 
 For example, add an RP as a direct subordinate of the trust anchor 'https://swamid.localhost':
 

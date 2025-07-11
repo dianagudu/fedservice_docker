@@ -124,13 +124,9 @@
             },
             "clients": {
               "": {
-                "redirect_uris": null,
-                "local": {
-                  "issuer": "http://op",
-                  "redirect_uris": [
+                "redirect_uris": [
                     "http://auto/authz_cb/local"
                   ]  
-                }
               }
             }  
           }

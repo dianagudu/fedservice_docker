@@ -3,13 +3,12 @@ import json
 import sys
 import os
 
-from fedservice import combo
 from idpyoidc.storage.abfile import AbstractFileSystem
 from idpyoidc.util import load_config_file
 
 from fedservice.combo import FederationCombo
 from fedservice.utils import make_federation_combo
-from utils import load_values_from_file
+from utils import load_values_from_file, get_entity_jwks
 
 
 # get the configuration folder from the command line
@@ -56,21 +55,26 @@ for ent, info in ENTITY.items():
     if "authority_hints" in info and info["authority_hints"]:
         authorities = []
         for auth in info["authority_hints"]:
-            authorities.append(fed_entity[auth].entity_id)
-            if auth not in subordinates:
-                subordinates[auth] = {}
-            _ent_id = get_federation_entity(fed_entity[ent]).entity_id
-            _sub_info = {
-                "jwks": get_federation_entity(fed_entity[ent]).keyjar.export_jwks(),
-            }
-            if fed_entity[ent].server.subordinate != {}:
-                _sub_info["intermediate"] = True
-            if ent in combo_entity:
-                _sub_info["entity_types"] = list(combo_entity[ent]._part.keys())
+            if auth not in fed_entity:
+                print(f"Authority {auth} not found, assuming not a fedservice entity but rather given by entity ID...")
+                authorities.append(auth)
             else:
-                _sub_info["entity_types"] = ["federation_entity"]
-
-            subordinates[auth][_ent_id] = _sub_info
+                # otherwise it is a fedservice entity, get the entity ID and add current entity as subordinate
+                authorities.append(fed_entity[auth].entity_id)
+                if auth not in subordinates:
+                    subordinates[auth] = {}
+                _ent_id = get_federation_entity(fed_entity[ent]).entity_id
+                _sub_info = {
+                    "jwks": get_federation_entity(fed_entity[ent]).keyjar.export_jwks(),
+                }
+                if fed_entity[ent].server.subordinate != {}:
+                    _sub_info["intermediate"] = True
+                if ent in combo_entity:
+                    _sub_info["entity_types"] = list(combo_entity[ent]._part.keys())
+                else:
+                    _sub_info["entity_types"] = ["federation_entity"]
+                subordinates[auth][_ent_id] = _sub_info
+        # write authority hints to a file
         print(f"authority_hints: {authorities}")
         with open("authority_hints", "w") as fp:
             for auth in authorities:
@@ -78,9 +82,15 @@ for ent, info in ENTITY.items():
     if "trust_anchors" in info and info["trust_anchors"]:
         trust_anchor[ent] = {}
         for anch in info["trust_anchors"]:
-            _fed_entity = get_federation_entity(fed_entity[anch])
-            _ent_id = _fed_entity.entity_id
-            trust_anchor[ent][_ent_id] = _fed_entity.keyjar.export_jwks()
+            if anch not in fed_entity:
+                print(f"Trust anchor {anch} not found, assuming not a fedservice entity but rather given by entity ID...")
+                # get keys from the well-known URL of anch
+                trust_anchor[ent][anch] = get_entity_jwks(anch)
+            else:
+                # otherwise it is a fedservice entity, get the entity ID and add current entity as trust anchor
+                _fed_entity = get_federation_entity(fed_entity[anch])
+                _ent_id = _fed_entity.entity_id
+                trust_anchor[ent][_ent_id] = _fed_entity.keyjar.export_jwks()
 
 
 trust_anchors = {}

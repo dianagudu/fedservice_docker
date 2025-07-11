@@ -1,0 +1,11 @@
+{
+  "rp2": {
+    "type": "rp",
+    "authority_hints": [
+      "https://ia2.oidf-pilot.edugain.org"
+    ],
+    "trust_anchors": [
+      "https://ta.oidf-pilot.edugain.org"
+    ]
+  }
+}
