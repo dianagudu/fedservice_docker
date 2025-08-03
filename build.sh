@@ -8,7 +8,7 @@ git clone https://github.com/SUNET/fedservice
 git clone https://github.com/IdentityPython/idpy-oidc.git
 
 echo "################ Update repositories"
-cd fedservice && git pull && cd ..
+cd fedservice && git pull && git checkout draft43_trust_mark_evaluation && cd ..
 cd idpy-oidc && git pull && git checkout issuer_metadata && cd ..
 
 
