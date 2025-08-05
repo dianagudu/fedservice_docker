@@ -102,6 +102,9 @@
               ],
               "token_endpoint_auth_method": [
                 "private_key_jwt"
+              ],
+              "client_registration_types": [
+                "explicit"
               ]
             },
             "services": {
