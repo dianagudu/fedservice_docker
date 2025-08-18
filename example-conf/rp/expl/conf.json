@@ -1,6 +1,12 @@
 {
   "entity": {
     "entity_id": "https://expl.localhost",
+    "preference": {
+      "organization_name": "RP explicit",
+      "display_name": "RP2",
+      "organization_uri": "https://expl.localhost",
+      "contacts": "operations@expl.localhost"
+    },
     "key_config": {
       "private_path": "private/fed_keys.json",
       "key_defs": [
@@ -84,9 +90,6 @@
             "preference": {
               "application_name": "rphandler",
               "application_type": "web",
-              "contacts": [
-                "ops@example.com"
-              ],
               "response_types_supported": [
                 "code",
                 "code id_token",
@@ -129,6 +132,10 @@
               "": {
                 "client_type": "oidc",
                 "preference": {
+                  "organization_name": "RP explicit",
+                  "display_name": "RP2",
+                  "organization_uri": "https://expl.localhost",
+                  "contacts": "operations@expl.localhost",
                   "client_registration_types": [
                     "explicit"
                   ],

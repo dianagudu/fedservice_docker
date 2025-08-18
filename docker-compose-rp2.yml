@@ -3,6 +3,8 @@ services:
     image: ddgu/fedservice:2.0.0
     init: true
     hostname: rp2
+    ports:
+      - 6001:80
     networks:
       - caddy
     environment:

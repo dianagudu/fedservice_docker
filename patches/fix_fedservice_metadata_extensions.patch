@@ -1,0 +1,369 @@
+diff --git a/src/fedservice/appclient/claims/oauth2.py b/src/fedservice/appclient/claims/oauth2.py
+index 3710d75..da7c678 100644
+--- a/src/fedservice/appclient/claims/oauth2.py
++++ b/src/fedservice/appclient/claims/oauth2.py
+@@ -15,7 +15,15 @@ class Claims(OAUth_claims):
+     _supports = OAUth_claims._supports.copy()
+     _supports.update({
+         "signed_jwks_uri": None,
+-        'organization_name': None
++        'organization_name': None,
++        'display_name': None,
++        'description': None,
++        'keywords': None,
++        'contacts': None,
++        'policy_uri': None,
++        'logo_uri': None,
++        'information_uri': None,
++        'organization_uri': None
+     })
+ 
+     callback_path = {}
+diff --git a/src/fedservice/appclient/claims/oidc.py b/src/fedservice/appclient/claims/oidc.py
+index c2a177a..5a66cf6 100644
+--- a/src/fedservice/appclient/claims/oidc.py
++++ b/src/fedservice/appclient/claims/oidc.py
+@@ -15,7 +15,15 @@ class Claims(OIDC_claims):
+     _supports = OIDC_claims._supports.copy()
+     _supports.update({
+         "signed_jwks_uri": None,
+-        'organization_name': None
++        'organization_name': None,
++        'display_name': None,
++        'description': None,
++        'keywords': None,
++        'contacts': None,
++        'policy_uri': None,
++        'logo_uri': None,
++        'information_uri': None,
++        'organization_uri': None
+     })
+ 
+     callback_path = {}
+diff --git a/src/fedservice/combo/__init__.py b/src/fedservice/combo/__init__.py
+index 925a1db..af6ee6e 100644
+--- a/src/fedservice/combo/__init__.py
++++ b/src/fedservice/combo/__init__.py
+@@ -113,9 +113,12 @@ class FederationCombo(Combo):
+         for federation_type, item in self._part.items():
+             logger.debug(f"federation_type:{federation_type}, item:{item}")
+             if isinstance(item, RPHandler): # Special treatment
++                res[federation_type] = item.client_configs[""]["preference"]
++                logger.debug(f"RPHandler metadata: {item.client_configs['']['preference']}")
+                 if client:
+                     _res = client.get_metadata()
+-                    res.update(_res)
++                    logger.debug(f"Client metadata: {_res}")
++                    res[federation_type].update(_res[federation_type])
+             elif getattr(item, "get_metadata", None):
+                 res.update(item.get_metadata(entity_type=federation_type))
+         logger.debug(f"metadata = {res}")
+diff --git a/src/fedservice/entity/__init__.py b/src/fedservice/entity/__init__.py
+index 27ec390..4e0e0ca 100644
+--- a/src/fedservice/entity/__init__.py
++++ b/src/fedservice/entity/__init__.py
+@@ -28,10 +28,14 @@ logger = logging.getLogger(__name__)
+ class FederationEntityClaims(ClaimsBase):
+     _supports = {
+         'organization_name': None,
++        'display_name': None,
++        'description': None,
++        'keywords': None,
+         'contacts': None,
+         'policy_uri': None,
+         'logo_uri': None,
+-        'homepage_uri': None,
++        'information_uri': None,
++        'organization_uri': None,
+         'trust_mark_owners': None,
+         'trust_mark_issuers': None
+     }
+diff --git a/src/fedservice/entity/claims.py b/src/fedservice/entity/claims.py
+index 66b2ce2..cde10ba 100644
+--- a/src/fedservice/entity/claims.py
++++ b/src/fedservice/entity/claims.py
+@@ -90,10 +90,14 @@ class ClientClaims(OAuth2ClientClaims.Claims):
+ class FederationEntityClaims(ClaimsBase):
+     _supports = {
+         'organization_name': None,
++        'display_name': None,
++        'description': None,
++        'keywords': None,
+         'contacts': None,
+         'policy_uri': None,
+         'logo_uri': None,
+-        'homepage_uri': None,
++        'information_uri': None,
++        'organization_uri': None,
+         'trust_mark_owners': None,
+         'trust_mark_issuers': None
+     }
+diff --git a/src/fedservice/message.py b/src/fedservice/message.py
+index 06386ef..349538b 100644
+--- a/src/fedservice/message.py
++++ b/src/fedservice/message.py
+@@ -69,9 +69,24 @@ REQUIRED_LIST_OF_DICT = ([dict], True, ser_any_list, dict_list_deser, False)
+ OPTIONAL_LIST_OF_DICT = ([dict], False, ser_any_list, dict_list_deser, False)
+ 
+ 
++class InformationalMetadataExtensions(Message):
++    c_param = {
++        "organization_name": SINGLE_OPTIONAL_STRING,
++        "display_name": SINGLE_OPTIONAL_STRING,
++        "description": SINGLE_OPTIONAL_STRING,
++        "keywords": OPTIONAL_LIST_OF_STRINGS,
++        "contacts": OPTIONAL_LIST_OF_STRINGS,
++        "logo_uri": SINGLE_OPTIONAL_STRING,
++        "policy_uri": SINGLE_OPTIONAL_STRING,
++        "information_uri": SINGLE_OPTIONAL_STRING,
++        "organization_uri": SINGLE_OPTIONAL_STRING,
++    }
++
++
+ class AuthorizationServerMetadata(Message):
+     """Metadata for an OAuth2 Authorization Server. With Federation additions"""
+-    c_param = {
++    c_param = InformationalMetadataExtensions.c_param.copy()
++    c_param.update({
+         "issuer": SINGLE_REQUIRED_STRING,
+         "authorization_endpoint": SINGLE_OPTIONAL_STRING,
+         "token_endpoint": SINGLE_OPTIONAL_STRING,
+@@ -99,7 +114,7 @@ class AuthorizationServerMetadata(Message):
+         'federation_registration_endpoint': SINGLE_OPTIONAL_STRING,
+         'request_authentication_methods_supported': OPTIONAL_LIST_OF_STRINGS,
+         'request_authentication_signing_alg_values_supported': OPTIONAL_LIST_OF_STRINGS,
+-    }
++    })
+ 
+ 
+ def auth_server_info_deser(val, sformat="json"):
+@@ -126,16 +141,6 @@ def naming_constraints_deser(val, sformat="json"):
+ SINGLE_OPTIONAL_NAMING_CONSTRAINTS = (Message, False, msg_ser, naming_constraints_deser, False)
+ 
+ 
+-class InformationalMetadataExtensions(Message):
+-    c_param = {
+-        "organization_name": SINGLE_OPTIONAL_STRING,
+-        "contacts": OPTIONAL_LIST_OF_STRINGS,
+-        "logo_url": SINGLE_OPTIONAL_STRING,
+-        "policy_url": SINGLE_OPTIONAL_STRING,
+-        "homepage_uri": SINGLE_OPTIONAL_STRING,
+-    }
+-
+-
+ class FederationEntity(InformationalMetadataExtensions):
+     """Class representing Federation Entity metadata."""
+     c_param = InformationalMetadataExtensions.c_param.copy()
+@@ -185,9 +190,9 @@ class OauthClientMetadata(OAuth2Message.OauthClientMetadata):
+     """Metadata for an OAuth2 Client."""
+     c_param = OAuth2Message.OauthClientMetadata.c_param.copy()
+     c_param.update({
+-        "organization_name": SINGLE_OPTIONAL_STRING,
+         "signed_jwks_uri": SINGLE_OPTIONAL_STRING,
+     })
++    c_param.update(InformationalMetadataExtensions.c_param.copy())
+ 
+ 
+ def oauth_client_metadata_deser(val, sformat="json"):
+@@ -202,6 +207,7 @@ OPTIONAL_OAUTH_CLIENT_METADATA = (Message, False, msg_ser,
+ class OauthClientInformationResponse(OauthClientMetadata):
+     """The information returned by a OAuth2 Server about an OAuth2 client."""
+     c_param = OauthClientMetadata.c_param.copy()
++    c_param.update(InformationalMetadataExtensions.c_param.copy())
+     c_param.update({
+         "client_id": SINGLE_REQUIRED_STRING,
+         "client_secret": SINGLE_OPTIONAL_STRING,
+@@ -227,7 +233,7 @@ OPTIONAL_OAUTH_CLIENT_REGISTRATION_RESPONSE = (
+     Message, False, msg_ser, oauth_client_registration_response_deser, False)
+ 
+ 
+-class OAuthProtectedResourceMetadata(Message):
++class OAuthProtectedResourceMetadata(InformationalMetadataExtensions):
+     c_param = {
+         "resource": SINGLE_REQUIRED_STRING,
+         "authorization_servers": OPTIONAL_LIST_OF_STRINGS,
+@@ -236,8 +242,8 @@ class OAuthProtectedResourceMetadata(Message):
+         "bearer_methods_supported": OPTIONAL_LIST_OF_STRINGS,
+         "resource_signing_alg_values_supported": OPTIONAL_LIST_OF_STRINGS,
+         "client_registration_types": OPTIONAL_LIST_OF_STRINGS,
+-        "organization_name": SINGLE_OPTIONAL_STRING,
+     }
++    c_param.update(InformationalMetadataExtensions.c_param.copy())
+ 
+ 
+ def oauth_protected_resource_deser(val, sformat="json"):
+@@ -249,10 +255,38 @@ OPTIONAL_OAUTH_PROTECTED_RESOURCE_METADATA = (
+     Message, False, msg_ser, oauth_protected_resource_deser, False)
+ 
+ 
++class RegistrationRequest(message.oidc.RegistrationRequest):
++    c_param = message.oidc.RegistrationRequest.c_param.copy()
++    c_param.update(InformationalMetadataExtensions.c_param.copy())
++    c_param.update({
++        'client_registration_types': REQUIRED_LIST_OF_STRINGS,
++        'signed_jwks_uri': SINGLE_OPTIONAL_STRING,
++        'jwks': SINGLE_OPTIONAL_JSON,
++        "claims_parameter_supported": OPTIONAL_LIST_OF_STRINGS,
++        "response_types_supported": OPTIONAL_LIST_OF_STRINGS,
++        "response_modes_supported": OPTIONAL_LIST_OF_STRINGS,
++        "request_object_signing_alg_values_supported": OPTIONAL_LIST_OF_STRINGS,
++        "request_object_encryption_alg_values_supported": OPTIONAL_LIST_OF_STRINGS,
++        "request_object_encryption_enc_values_supported": OPTIONAL_LIST_OF_STRINGS,
++        "code_challenge_methods_supported": OPTIONAL_LIST_OF_STRINGS,
++        "scopes_supported": OPTIONAL_LIST_OF_STRINGS,
++        "claims_suppported": OPTIONAL_LIST_OF_STRINGS
++    })
++
++
+ class OIDCRPMetadata(RegistrationRequest):
+     c_param = RegistrationRequest.c_param.copy()
+     c_param.update({
+-        "client_registration_types": REQUIRED_LIST_OF_STRINGS
++        "client_registration_types": REQUIRED_LIST_OF_STRINGS,
++        "organization_name": SINGLE_OPTIONAL_STRING,
++        "display_name": SINGLE_OPTIONAL_STRING,
++        "description": SINGLE_OPTIONAL_STRING,
++        "keywords": OPTIONAL_LIST_OF_STRINGS,
++        "contacts": OPTIONAL_LIST_OF_STRINGS,
++        "logo_uri": SINGLE_OPTIONAL_STRING,
++        "policy_uri": SINGLE_OPTIONAL_STRING,
++        "information_uri": SINGLE_OPTIONAL_STRING,
++        "organization_uri": SINGLE_OPTIONAL_STRING
+     })
+ 
+ 
+@@ -265,8 +299,29 @@ OPTIONAL_RP_METADATA = (
+     Message, False, msg_ser, rp_metadata_deser, False)
+ 
+ 
++class RegistrationResponse(ResponseMessage):
++    """
++    Response to client_register registration requests
++    """
++
++    c_param = ResponseMessage.c_param.copy()
++    c_param.update(InformationalMetadataExtensions.c_param.copy())
++    c_param.update(
++        {
++            "client_id": SINGLE_REQUIRED_STRING,
++            "client_secret": SINGLE_OPTIONAL_STRING,
++            "registration_access_token": SINGLE_OPTIONAL_STRING,
++            "registration_client_uri": SINGLE_OPTIONAL_STRING,
++            "client_id_issued_at": SINGLE_OPTIONAL_INT,
++            "client_secret_expires_at": SINGLE_OPTIONAL_INT,
++        }
++    )
++    c_param.update(RegistrationRequest.c_param)
++
++
+ class OIDCRPRegistrationResponse(RegistrationResponse):
+     c_param = RegistrationResponse.c_param.copy()
++    c_param.update(InformationalMetadataExtensions.c_param.copy())
+     c_param.update({
+         "client_registration_types": REQUIRED_LIST_OF_STRINGS
+     })
+@@ -281,18 +336,27 @@ OPTIONAL_RP_REGISTRATION_RESPONSE = (
+     Message, False, msg_ser, rp_registration_response_deser, False)
+ 
+ 
++class ProviderConfigurationResponse(message.oidc.ProviderConfigurationResponse):
++    c_param = message.oidc.ProviderConfigurationResponse.c_param.copy()
++    c_param.update(InformationalMetadataExtensions.c_param.copy())
++    c_param.update({
++        'client_registration_types_supported': REQUIRED_LIST_OF_STRINGS,
++        'federation_registration_endpoint': SINGLE_OPTIONAL_STRING,
++        'request_authentication_methods_supported': SINGLE_OPTIONAL_JSON,
++        'request_authentication_signing_alg_values_supported': OPTIONAL_LIST_OF_STRINGS,
++        'signed_jwks_uri': SINGLE_OPTIONAL_STRING,
++        'jwks': SINGLE_OPTIONAL_JSON
++    })
++
++
+ class OPMetadata(ProviderConfigurationResponse):
+     c_param = ProviderConfigurationResponse.c_param.copy()
++    c_param.update(InformationalMetadataExtensions.c_param.copy())
+     c_param.update({
+         "client_registration_types_supported": REQUIRED_LIST_OF_STRINGS,
+         "federation_registration_endpoint": SINGLE_OPTIONAL_STRING,
+         "request_authentication_methods_supported": SINGLE_OPTIONAL_JSON,
+         "request_authentication_signing_alg_values_supported": OPTIONAL_LIST_OF_STRINGS,
+-        "organization_name": SINGLE_OPTIONAL_STRING,
+-        "contacts": OPTIONAL_LIST_OF_STRINGS,
+-        "logo_uri": SINGLE_OPTIONAL_STRING,
+-        "policy_uri": SINGLE_OPTIONAL_STRING,
+-        "homepage_uri": SINGLE_OPTIONAL_STRING,
+         "jwks": SINGLE_OPTIONAL_DICT,
+         "jwks_uri": SINGLE_OPTIONAL_STRING,
+         "signed_jwks_uri": SINGLE_OPTIONAL_STRING
+@@ -301,12 +365,8 @@ class OPMetadata(ProviderConfigurationResponse):
+ 
+ class FedASConfigurationResponse(ASConfigurationResponse):
+     c_param = ASConfigurationResponse.c_param.copy()
++    c_param.update(InformationalMetadataExtensions.c_param.copy())
+     c_param.update({
+-        "organization_name": SINGLE_OPTIONAL_STRING,
+-        "contacts": OPTIONAL_LIST_OF_STRINGS,
+-        "logo_uri": SINGLE_OPTIONAL_STRING,
+-        "policy_uri": SINGLE_OPTIONAL_STRING,
+-        "homepage_uri": SINGLE_OPTIONAL_STRING,
+         "jwks": SINGLE_OPTIONAL_DICT,
+         "jwks_uri": SINGLE_OPTIONAL_STRING,
+         "signed_jwks_uri": SINGLE_OPTIONAL_STRING
+@@ -686,57 +746,6 @@ class ListResponse(Message):
+     }
+ 
+ 
+-class ProviderConfigurationResponse(message.oidc.ProviderConfigurationResponse):
+-    c_param = message.oidc.ProviderConfigurationResponse.c_param.copy()
+-    c_param.update({
+-        'client_registration_types_supported': REQUIRED_LIST_OF_STRINGS,
+-        'federation_registration_endpoint': SINGLE_OPTIONAL_STRING,
+-        'request_authentication_methods_supported': SINGLE_OPTIONAL_JSON,
+-        'request_authentication_signing_alg_values_supported': OPTIONAL_LIST_OF_STRINGS,
+-        'organization_name': SINGLE_OPTIONAL_STRING,
+-        'signed_jwks_uri': SINGLE_OPTIONAL_STRING,
+-        'jwks': SINGLE_OPTIONAL_JSON
+-    })
+-
+-
+-class RegistrationRequest(message.oidc.RegistrationRequest):
+-    c_param = message.oidc.RegistrationRequest.c_param.copy()
+-    c_param.update({
+-        'client_registration_types': REQUIRED_LIST_OF_STRINGS,
+-        'organization_name': SINGLE_OPTIONAL_STRING,
+-        'signed_jwks_uri': SINGLE_OPTIONAL_STRING,
+-        'jwks': SINGLE_OPTIONAL_JSON,
+-        "claims_parameter_supported": OPTIONAL_LIST_OF_STRINGS,
+-        "response_types_supported": OPTIONAL_LIST_OF_STRINGS,
+-        "response_modes_supported": OPTIONAL_LIST_OF_STRINGS,
+-        "request_object_signing_alg_values_supported": OPTIONAL_LIST_OF_STRINGS,
+-        "request_object_encryption_alg_values_supported": OPTIONAL_LIST_OF_STRINGS,
+-        "request_object_encryption_enc_values_supported": OPTIONAL_LIST_OF_STRINGS,
+-        "code_challenge_methods_supported": OPTIONAL_LIST_OF_STRINGS,
+-        "scopes_supported": OPTIONAL_LIST_OF_STRINGS,
+-        "claims_suppported": OPTIONAL_LIST_OF_STRINGS
+-    })
+-
+-
+-class RegistrationResponse(ResponseMessage):
+-    """
+-    Response to client_register registration requests
+-    """
+-
+-    c_param = ResponseMessage.c_param.copy()
+-    c_param.update(
+-        {
+-            "client_id": SINGLE_REQUIRED_STRING,
+-            "client_secret": SINGLE_OPTIONAL_STRING,
+-            "registration_access_token": SINGLE_OPTIONAL_STRING,
+-            "registration_client_uri": SINGLE_OPTIONAL_STRING,
+-            "client_id_issued_at": SINGLE_OPTIONAL_INT,
+-            "client_secret_expires_at": SINGLE_OPTIONAL_INT,
+-        }
+-    )
+-    c_param.update(RegistrationRequest.c_param)
+-
+-
+ class HistoricalKeysResponse(Message):
+     c_param = {
+         'iss': SINGLE_REQUIRED_STRING,

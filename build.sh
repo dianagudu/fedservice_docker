@@ -11,6 +11,8 @@ echo "################ Update repositories"
 cd fedservice && git pull && git checkout draft43_trust_mark_evaluation && cd ..
 cd idpy-oidc && git pull && git checkout issuer_metadata && cd ..
 
+echo "################ Applying patches"
+cd fedservice && git apply ../../patches/fix_fedservice_metadata_extensions.patch && cd ..
 
 echo "################ Build docker image"
 cd ..
