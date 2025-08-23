@@ -41,23 +41,22 @@ index c2a177a..5a66cf6 100644
  
      callback_path = {}
 diff --git a/src/fedservice/combo/__init__.py b/src/fedservice/combo/__init__.py
-index 925a1db..af6ee6e 100644
+index 925a1db..6ebd700 100644
 --- a/src/fedservice/combo/__init__.py
 +++ b/src/fedservice/combo/__init__.py
-@@ -113,9 +113,12 @@ class FederationCombo(Combo):
+@@ -113,8 +113,12 @@ class FederationCombo(Combo):
          for federation_type, item in self._part.items():
              logger.debug(f"federation_type:{federation_type}, item:{item}")
              if isinstance(item, RPHandler): # Special treatment
-+                res[federation_type] = item.client_configs[""]["preference"]
++                # res[federation_type] = item.client_configs[""]["preference"]
 +                logger.debug(f"RPHandler metadata: {item.client_configs['']['preference']}")
                  if client:
                      _res = client.get_metadata()
--                    res.update(_res)
 +                    logger.debug(f"Client metadata: {_res}")
-+                    res[federation_type].update(_res[federation_type])
++                    # res[federation_type].update(_res[federation_type])
+                     res.update(_res)
              elif getattr(item, "get_metadata", None):
                  res.update(item.get_metadata(entity_type=federation_type))
-         logger.debug(f"metadata = {res}")
 diff --git a/src/fedservice/entity/__init__.py b/src/fedservice/entity/__init__.py
 index 27ec390..4e0e0ca 100644
 --- a/src/fedservice/entity/__init__.py
@@ -99,7 +98,7 @@ index 66b2ce2..cde10ba 100644
          'trust_mark_issuers': None
      }
 diff --git a/src/fedservice/message.py b/src/fedservice/message.py
-index 06386ef..349538b 100644
+index 06386ef..0fb7dba 100644
 --- a/src/fedservice/message.py
 +++ b/src/fedservice/message.py
 @@ -69,9 +69,24 @@ REQUIRED_LIST_OF_DICT = ([dict], True, ser_any_list, dict_list_deser, False)
@@ -309,6 +308,100 @@ index 06386ef..349538b 100644
          "jwks": SINGLE_OPTIONAL_DICT,
          "jwks_uri": SINGLE_OPTIONAL_STRING,
          "signed_jwks_uri": SINGLE_OPTIONAL_STRING
+@@ -449,18 +509,18 @@ class TrustMarks(Message):
+         for _id, spec in self.items():
+             _trust_mark = spec.get("trust_mark")
+             if _trust_mark:
+-                _trust_mark_id = spec.get("trust_mark_id")
+-                if _trust_mark_id:
++                _trust_mark_type = spec.get("trust_mark_type")
++                if _trust_mark_type:
+                     # Have to peek into the trust mark
+                     _jws = factory(_trust_mark)
+                     if not _jws:
+                         raise ValueError(f"Not a proper signed JWT: {_trust_mark}")
+-                    _tm_id = _jws.jwt.payload().get("trust_mark_id")
+-                    if _tm_id != _trust_mark_id:
+-                        raise ValueError("The Trust Mark identifier MUST have the same value as the trust_mark_id "
++                    _tm_id = _jws.jwt.payload().get("trust_mark_type")
++                    if _tm_id != _trust_mark_type:
++                        raise ValueError("The Trust Mark identifier MUST have the same value as the trust_mark_type "
+                                          "claim")
+                 else:
+-                    raise MissingRequiredAttribute("trust_mark_id")
++                    raise MissingRequiredAttribute("trust_mark_type")
+             else:
+                 raise MissingRequiredAttribute("trust_mark")
+ 
+@@ -557,11 +617,11 @@ class EntityStatement(JsonWebToken):
+                 _trust_mark = None
+                 if isinstance(_tm["trust_mark"], str):
+                     _payload = get_payload(_tm["trust_mark"])
+-                    if _payload["trust_mark_id"] != _tm["trust_mark_id"]:
++                    if _payload["trust_mark_type"] != _tm["trust_mark_type"]:
+                         raise ValueError("trust_mark_is values does not match")
+                     _trust_mark = TrustMark(**_payload)
+                 elif isinstance(_tm["trust_mark"], dict):
+-                    if _tm["trust_mark"]["trust_mark_id"] != _tm["trust_mark_id"]:
++                    if _tm["trust_mark"]["trust_mark_type"] != _tm["trust_mark_type"]:
+                         raise ValueError("trust_mark_is values does not match")
+                     _trust_mark = TrustMark(**_tm["trust_mark"])
+                 else:
+@@ -574,7 +634,7 @@ class TrustMarkDelegation(Message):
+     c_param = {
+         "iss": SINGLE_REQUIRED_STRING,
+         "sub": SINGLE_REQUIRED_STRING,
+-        "trust_mark_id": SINGLE_REQUIRED_STRING,
++        "trust_mark_type": SINGLE_REQUIRED_STRING,
+         "iat": SINGLE_REQUIRED_INT,
+         "exp": SINGLE_OPTIONAL_INT,
+         "ref": SINGLE_OPTIONAL_STRING
+@@ -596,7 +656,7 @@ class TrustMark(JsonWebToken):
+         "sub": SINGLE_REQUIRED_STRING,
+         'iss': SINGLE_REQUIRED_STRING,
+         'iat': SINGLE_REQUIRED_INT,
+-        "trust_mark_id": SINGLE_REQUIRED_STRING,
++        "trust_mark_type": SINGLE_REQUIRED_STRING,
+         "logo_uri": SINGLE_OPTIONAL_STRING,
+         "exp": SINGLE_OPTIONAL_INT,
+         "ref": SINGLE_OPTIONAL_STRING,
+@@ -624,7 +684,7 @@ class TrustMark(JsonWebToken):
+             _delegation.verify()
+             if self.get("iss") != _delegation["sub"]:
+                 raise ValueError("Not the issuer the delegation applies to")
+-            if self.get("trust_mark_id") != _delegation["trust_mark_id"]:
++            if self.get("trust_mark_type") != _delegation["trust_mark_type"]:
+                 raise ValueError("Not the trust mark id the delegation applies to")
+             self["__delegation"] = _delegation
+ 
+@@ -634,15 +694,15 @@ class TrustMark(JsonWebToken):
+ class TrustMarkStatusRequest(Message):
+     c_param = {
+         "sub": SINGLE_OPTIONAL_STRING,
+-        "trust_mark_id": SINGLE_OPTIONAL_STRING,
++        "trust_mark_type": SINGLE_OPTIONAL_STRING,
+         "iat": SINGLE_OPTIONAL_INT,
+         "trust_mark": SINGLE_OPTIONAL_STRING
+     }
+ 
+     def verify(self, **kwargs):
+         if 'trust_mark' not in self:
+-            if 'sub' not in self or 'trust_mark_id' not in self:
+-                raise AttributeError('Must have both "sub" and "trust_mark_id" or "trust_mark"')
++            if 'sub' not in self or 'trust_mark_type' not in self:
++                raise AttributeError('Must have both "sub" and "trust_mark_type" or "trust_mark"')
+ 
+ 
+ def trust_mark_deser(val, sformat="json"):
+@@ -675,7 +735,7 @@ class ListRequest(Message):
+     c_param = {
+         "entity_type": SINGLE_OPTIONAL_STRING,
+         "trust_marked": SINGLE_OPTIONAL_BOOLEAN,
+-        "trust_mark_id": SINGLE_OPTIONAL_STRING,
++        "trust_mark_type": SINGLE_OPTIONAL_STRING,
+         "intermediate": SINGLE_OPTIONAL_BOOLEAN
+     }
+ 
 @@ -686,57 +746,6 @@ class ListResponse(Message):
      }
  
@@ -367,3 +460,21 @@ index 06386ef..349538b 100644
  class HistoricalKeysResponse(Message):
      c_param = {
          'iss': SINGLE_REQUIRED_STRING,
+@@ -747,7 +756,7 @@ class HistoricalKeysResponse(Message):
+ 
+ class TrustMarkRequest(Message):
+     c_param = {
+-        "trust_mark_id": SINGLE_REQUIRED_STRING,
++        "trust_mark_type": SINGLE_REQUIRED_STRING,
+         "sub": SINGLE_REQUIRED_STRING
+     }
+ 
+@@ -756,7 +765,7 @@ class WhoRequest(Message):
+     c_param = {
+         "entity_type": SINGLE_OPTIONAL_STRING,
+         "credential_type": SINGLE_OPTIONAL_STRING,
+-        "trust_mark_id": SINGLE_OPTIONAL_STRING
++        "trust_mark_type": SINGLE_OPTIONAL_STRING
+     }
+ 
+ 
