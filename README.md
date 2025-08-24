@@ -119,6 +119,32 @@ You can also use the `ofcli` tool without installing it, by running the followin
 docker-compose run ofcli <command>
 ```
 
+### Adding trust marks
+
+You can add trust marks to an entity by adding a file named `trust_marks` in the entity's configuration directory. The file must contain a JSON array of objects, where each object contains the following keys:
+
+- `trust_mark`: the trust mark as a JWT
+- `trust_mark_type`: the type of the trust mark (a URI)
+
+For example, to add a SIRTFI trust mark to the RP `expl`, create the file `conf/rp/expl/trust_marks` with the following content:
+
+```json
+[{"trust_mark": "<JWT>", "trust_mark_type": "https://refeds.org/sirtfi"}]
+```
+
+Replace `<JWT>` with the actual trust mark JWT.
+
+Then modify the `conf/rp/expl/conf.json` file to include the `trust_marks` configuration:
+
+```json
+"trust_marks": {
+  "class": "idpyoidc.storage.jsonfile.JsonArrayFile",
+  "kwargs": {
+    "file_name": "trust_marks"
+  }
+}
+```
+
 ## GEANT T&II setup
 
 We have a testbed federation setup at `fedservice.testbed.oidcfed.incubator.geant.org`:
