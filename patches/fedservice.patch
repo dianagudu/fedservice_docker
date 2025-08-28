@@ -40,6 +40,51 @@ index c2a177a..5a66cf6 100644
      })
  
      callback_path = {}
+diff --git a/src/fedservice/appclient/oidc/registration.py b/src/fedservice/appclient/oidc/registration.py
+index 65876f0..5a75eca 100644
+--- a/src/fedservice/appclient/oidc/registration.py
++++ b/src/fedservice/appclient/oidc/registration.py
+@@ -74,12 +74,15 @@ class Registration(registration.Registration):
+         if _context.trust_marks:
+             kwargs["trust_marks"] = _context.trust_marks
+ 
++        logger.debug(f"?????? {request_args}")
++
+         _jws = _context.create_entity_statement(
+             iss=_entity_id,
+             sub=_entity_id,
+             metadata=_md,
+             key_jar=_federation_keyjar,
+             authority_hints=_authority_hints,
++            aud=request_args.get("aud") if request_args else None,
+             **kwargs)
+ 
+         # store for later reference
+diff --git a/src/fedservice/appclient/stand_alone_client_entity.py b/src/fedservice/appclient/stand_alone_client_entity.py
+index 0b9ae28..f6219ab 100644
+--- a/src/fedservice/appclient/stand_alone_client_entity.py
++++ b/src/fedservice/appclient/stand_alone_client_entity.py
+@@ -177,6 +177,9 @@ class StandAloneClientEntity(ClientEntity):
+         if len(_possible) == 1:
+             if 'automatic' in _possible:
+                 return
++        
++        
++        logger.warning(f"!!!!!!!!!!!!!!!{_context.issuer}")
+ 
+         if _federation_entity.get_service("registration"):  # means I can do dynamic client registration
+             if request_args is None:
+@@ -185,6 +188,10 @@ class StandAloneClientEntity(ClientEntity):
+             if behaviour_args:
+                 _params = RegistrationRequest().parameters()
+                 request_args.update({k: v for k, v in behaviour_args.items() if k in _params})
++            # set audience to OP's entity ID
++            logger.warning(f"!!!!!!!!!!!!!!!Setting 'aud' to {_context.issuer}")
++            request_args.update({"aud": _context.issuer})
++            logger.warning(f"!!!!!!!!!!!!!!!{request_args}")
+ 
+             # root = topmost_unit(_federation_entity)
+             _endpoint_name = _federation_entity.client.get_service("registration").endpoint_name
 diff --git a/src/fedservice/combo/__init__.py b/src/fedservice/combo/__init__.py
 index 925a1db..6ebd700 100644
 --- a/src/fedservice/combo/__init__.py

@@ -1,3 +1,16 @@
+diff --git a/src/idpyoidc/client/oauth2/stand_alone_client.py b/src/idpyoidc/client/oauth2/stand_alone_client.py
+index c456176..d0b31d4 100644
+--- a/src/idpyoidc/client/oauth2/stand_alone_client.py
++++ b/src/idpyoidc/client/oauth2/stand_alone_client.py
+@@ -137,6 +137,8 @@ class StandAloneClient(Client):
+                 _params = RegistrationRequest().parameters()
+                 request_args.update({k: v for k, v in behaviour_args.items() if k in _params})
+ 
++            request_args["aud"] = _context.issuer
++
+             load_registration_response(self, request_args=request_args)
+         else:
+             _context.map_preferred_to_registered()
 diff --git a/src/idpyoidc/storage/jsonfile.py b/src/idpyoidc/storage/jsonfile.py
 new file mode 100644
 index 0000000..9d28323
@@ -47,3 +60,20 @@ index 0000000..9d28323
 +    def __call__(self):
 +        """Return the latest contents of the file as a list (without mutating self)."""
 +        return self._read_info()
+diff --git a/src/idpyoidc/transform.py b/src/idpyoidc/transform.py
+index 77a866a..1e457be 100644
+--- a/src/idpyoidc/transform.py
++++ b/src/idpyoidc/transform.py
+@@ -195,7 +195,11 @@ def preferred_to_registered(
+                     if _val:
+                         registered[key] = _val
+                     else:
+-                        raise ValueError(f"Not able to support the OPs choice: {key}={val}")
++                        if key == "scope":
++                            # Just add what I support
++                            registered[key] = _allow
++                        else:
++                            raise ValueError(f"Not able to support the OPs choice: {key}={val}")
+             else:
+                 registered[key] = val  # Should I just accept with the OP says ??
+ 
